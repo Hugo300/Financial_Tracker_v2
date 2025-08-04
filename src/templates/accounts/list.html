@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Accounts - Financial Tracker{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-university"></i>
+        Accounts
+    </h1>
+    <div class="header-actions">
+        <a href="{{ url_for('accounts.create_account') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Add Account
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Account Summary -->
+<div class="summary-cards">
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Total Assets</h3>
+            <i class="fas fa-coins"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value">
+                {{ summary.total_assets|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                {{ summary.total_accounts }} accounts
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Total Liabilities</h3>
+            <i class="fas fa-credit-card"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value">
+                {{ summary.total_liabilities|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                Credit cards & loans
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Net Worth</h3>
+            <i class="fas fa-balance-scale"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value {% if summary.net_worth >= 0 %}positive{% else %}negative{% endif %}">
+                {{ summary.net_worth|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                Assets - Liabilities
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card">
+    <div class="card-header">
+        <h3>Filter Accounts</h3>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="filter-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="type" class="form-label">Account Type</label>
+                    <select name="type" id="type" class="form-select">
+                        <option value="">All Types</option>
+                        {% for account_type in account_types %}
+                            <option value="{{ account_type.value }}" 
+                                    {% if current_type == account_type.value %}selected{% endif %}>
+                                {{ account_type.value.replace('_', ' ').title() }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="active" class="form-label">Status</label>
+                    <select name="active" id="active" class="form-select">
+                        <option value="">All Accounts</option>
+                        <option value="true" {% if current_active == 'true' %}selected{% endif %}>Active Only</option>
+                        <option value="false" {% if current_active == 'false' %}selected{% endif %}>Inactive Only</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i>
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Accounts List -->
+<div class="card">
+    <div class="card-header">
+        <h3>Your Accounts</h3>
+        <div class="card-actions">
+            <span class="text-muted">{{ accounts|length }} accounts</span>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if accounts %}
+            <div class="accounts-grid">
+                {% for account in accounts %}
+                    <div class="account-card">
+                        <div class="account-header">
+                            <div class="account-info">
+                                <h4 class="account-name">
+                                    <a href="{{ url_for('accounts.view_account', account_id=account.id) }}">
+                                        {{ account.name }}
+                                    </a>
+                                </h4>
+                                <div class="account-type">
+                                    {{ account.account_type.value.replace('_', ' ').title() }}
+                                    {% if account.institution %}
+                                        • {{ account.institution }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="account-status">
+                                {% if account.is_active %}
+                                    <span class="status-badge status-active">Active</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="account-balance">
+                            <div class="balance-amount">
+                                {{ account.formatted_balance }}
+                            </div>
+                            {% if account.account_number %}
+                                <div class="account-number">
+                                    ****{{ account.account_number[-4:] if account.account_number|length > 4 else account.account_number }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="account-actions">
+                            <a href="{{ url_for('accounts.view_account', account_id=account.id) }}" 
+                               class="btn btn-sm btn-outline">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </a>
+                            <a href="{{ url_for('accounts.edit_account', account_id=account.id) }}" 
+                               class="btn btn-sm btn-outline">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </a>
+                            <a href="{{ url_for('transactions.create_transaction') }}?account_id={{ account.id }}" 
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Add Transaction
+                            </a>
+                        </div>
+                        
+                        {% if account.description %}
+                            <div class="account-description">
+                                {{ account.description }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-university"></i>
+                <h3>No accounts found</h3>
+                <p>Get started by adding your first account.</p>
+                <a href="{{ url_for('accounts.create_account') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add Your First Account
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.filter-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.account-card {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    background-color: var(--card-bg);
+    transition: box-shadow 0.2s ease;
+}
+
+.account-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.account-name {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.account-name a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.account-name a:hover {
+    color: var(--primary-color);
+}
+
+.account-type {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.status-inactive {
+    background-color: var(--danger-bg);
+    color: var(--danger-color);
+}
+
+.account-balance {
+    margin-bottom: 1rem;
+}
+
+.balance-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.account-number {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.account-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.account-description {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .filter-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .accounts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .account-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .account-actions {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

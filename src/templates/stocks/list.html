@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolio - Financial Tracker{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-chart-area"></i>
+        Portfolio
+    </h1>
+    <div class="header-actions">
+        <button id="refresh-prices-btn" class="btn btn-outline" title="Update all stock prices">
+            <i class="fas fa-sync-alt"></i>
+            Update Prices
+        </button>
+        <a href="{{ url_for('stocks.create_stock_transaction') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Record Transaction
+        </a>
+        <a href="{{ url_for('stocks.add_stock') }}" class="btn btn-outline">
+            <i class="fas fa-chart-line"></i>
+            Add Stock
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Portfolio Overview -->
+<div class="summary-cards">
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Portfolio Value</h3>
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value">
+                {{ portfolio_summary.total_value|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                Current market value
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Total Cost Basis</h3>
+            <i class="fas fa-coins"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value">
+                {{ portfolio_summary.total_cost|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                Amount invested
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Total P&L</h3>
+            <i class="fas fa-balance-scale"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value {% if portfolio_summary.total_gain_loss >= 0 %}positive{% else %}negative{% endif %}">
+                {% if portfolio_summary.total_gain_loss >= 0 %}
+                    +{{ portfolio_summary.total_gain_loss|currency(settings.currency) }}
+                {% else %}
+                    {{ portfolio_summary.total_gain_loss|currency(settings.currency) }}
+                {% endif %}
+            </div>
+            <div class="summary-detail {% if portfolio_summary.total_gain_loss >= 0 %}positive{% else %}negative{% endif %}">
+                {% if portfolio_summary.total_gain_loss >= 0 %}
+                    <i class="fas fa-arrow-up"></i>
+                {% else %}
+                    <i class="fas fa-arrow-down"></i>
+                {% endif %}
+                {{ portfolio_summary.total_gain_loss_percentage|percentage }}%
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Holdings</h3>
+            <i class="fas fa-briefcase"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value">
+                {{ portfolio_summary.holdings_count }}
+            </div>
+            <div class="summary-detail">
+                Different stocks
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Holdings Table -->
+<div class="card">
+    <div class="card-header">
+        <h3>Current Holdings</h3>
+        <div class="card-actions">
+            <span class="text-muted">{{ portfolio_summary.holdings_count }} holdings</span>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if portfolio_summary.holdings %}
+            <div class="table-responsive">
+                <table class="table" data-sortable>
+                    <thead>
+                        <tr>
+                            <th data-sort="string">Symbol</th>
+                            <th data-sort="string">Company</th>
+                            <th data-sort="number">Shares</th>
+                            <th data-sort="number">Avg Cost</th>
+                            <th data-sort="number">Current Price</th>
+                            <th data-sort="number">Market Value</th>
+                            <th data-sort="number">Gain/Loss</th>
+                            <th data-sort="number">%</th>
+                            <th data-sort="date">Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for holding in portfolio_summary.holdings %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('stocks.view_stock', stock_id=holding.stock_id) }}" class="stock-symbol">
+                                        {{ holding.symbol }}
+                                    </a>
+                                </td>
+                                <td class="company-name">{{ holding.name }}</td>
+                                <td class="text-right">{{ holding.shares|number }}</td>
+                                <td class="text-right">{{ holding.average_cost|currency(settings.currency) }}</td>
+                                <td class="text-right">
+                                    {% if holding.current_price %}
+                                        {{ holding.current_price|currency(settings.currency) }}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-right">{{ holding.current_value|currency(settings.currency) }}</td>
+                                <td class="text-right {% if holding.gain_loss >= 0 %}positive{% else %}negative{% endif %}">
+                                    {% if holding.gain_loss >= 0 %}
+                                        +{{ holding.gain_loss|currency(settings.currency) }}
+                                    {% else %}
+                                        {{ holding.gain_loss|currency(settings.currency) }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-right {% if holding.gain_loss_percentage >= 0 %}positive{% else %}negative{% endif %}">
+                                    {% if holding.gain_loss_percentage >= 0 %}
+                                        <i class="fas fa-arrow-up"></i>
+                                        +{{ holding.gain_loss_percentage|percentage }}%
+                                    {% else %}
+                                        <i class="fas fa-arrow-down"></i>
+                                        {{ holding.gain_loss_percentage|percentage }}%
+                                    {% endif %}
+                                </td>
+                                <td class="text-muted">
+                                    {% if holding.last_updated %}
+                                        {{ holding.last_updated.strftime('%m/%d %H:%M') }}
+                                    {% else %}
+                                        Never
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ url_for('stocks.view_stock', stock_id=holding.stock_id) }}" 
+                                           class="btn btn-sm btn-outline" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('stocks.create_stock_transaction') }}?stock_id={{ holding.stock_id }}" 
+                                           class="btn btn-sm btn-primary" title="Buy/Sell">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-chart-area"></i>
+                <h3>No holdings found</h3>
+                <p>Start building your portfolio by adding stocks and recording transactions.</p>
+                <div class="empty-state-actions">
+                    <a href="{{ url_for('stocks.add_stock') }}" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i>
+                        Add Your First Stock
+                    </a>
+                    <a href="{{ url_for('stocks.create_stock_transaction') }}" class="btn btn-outline">
+                        <i class="fas fa-plus"></i>
+                        Record Transaction
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="card">
+    <div class="card-header">
+        <h3>Recent Stock Transactions</h3>
+        <div class="card-actions">
+            <a href="{{ url_for('stocks.list_stock_transactions') }}" class="btn btn-sm btn-outline">
+                View All
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if recent_transactions %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Symbol</th>
+                            <th>Type</th>
+                            <th>Shares</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Fees</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.date.strftime('%m/%d/%Y') }}</td>
+                                <td>
+                                    <a href="{{ url_for('stocks.view_stock', stock_id=transaction.stock_id) }}">
+                                        {{ transaction.stock.symbol }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="transaction-type transaction-type-{{ transaction.transaction_type.value }}">
+                                        {{ transaction.transaction_type.value.title() }}
+                                    </span>
+                                </td>
+                                <td class="text-right">{{ transaction.shares|number }}</td>
+                                <td class="text-right">{{ transaction.price_per_share|currency(settings.currency) }}</td>
+                                <td class="text-right">{{ transaction.total_amount|currency(settings.currency) }}</td>
+                                <td class="text-right">
+                                    {% if transaction.fees > 0 %}
+                                        {{ transaction.fees|currency(settings.currency) }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state-small">
+                <p class="text-muted">No recent transactions found.</p>
+                <a href="{{ url_for('stocks.create_stock_transaction') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Record First Transaction
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.stock-symbol {
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.stock-symbol:hover {
+    text-decoration: underline;
+}
+
+.company-name {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.transaction-type {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.transaction-type-buy {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.transaction-type-sell {
+    background-color: var(--danger-bg);
+    color: var(--danger-color);
+}
+
+.transaction-type-dividend {
+    background-color: var(--info-bg);
+    color: var(--info-color);
+}
+
+.empty-state-small {
+    text-align: center;
+    padding: 1rem;
+}
+
+.empty-state-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .summary-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .company-name {
+        max-width: 120px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .empty-state-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh prices button
+    const refreshBtn = document.getElementById('refresh-prices-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            const originalText = this.innerHTML;
+
+            // Show loading state
+            icon.classList.add('fa-spin');
+            this.disabled = true;
+
+            // Make API call to refresh prices
+            fetch('{{ url_for("stocks.update_all_prices") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to show updated prices
+                    window.location.reload();
+                } else {
+                    alert('Failed to update prices: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error updating prices:', error);
+                alert('Failed to update prices. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                icon.classList.remove('fa-spin');
+                this.disabled = false;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

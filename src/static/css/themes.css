@@ -1,0 +1,203 @@
+/* Light theme (default) */
+.theme-light {
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --primary-light: #dbeafe;
+    
+    --success-color: #059669;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    
+    --danger-color: #dc2626;
+    --danger-bg: #fee2e2;
+    --danger-border: #fecaca;
+    
+    --warning-color: #d97706;
+    --warning-bg: #fef3c7;
+    --warning-border: #fde68a;
+    
+    --info-color: #0891b2;
+    --info-bg: #cffafe;
+    --info-border: #a5f3fc;
+    
+    --bg-color: #f8fafc;
+    --text-color: #1e293b;
+    --text-muted: #64748b;
+    
+    --nav-bg: #ffffff;
+    --card-bg: #ffffff;
+    --card-header-bg: #f8fafc;
+    --input-bg: #ffffff;
+    
+    --border-color: #e2e8f0;
+    --hover-bg: #f1f5f9;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme */
+.theme-dark {
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-light: #1e3a8a;
+    
+    --success-color: #34d399;
+    --success-bg: #064e3b;
+    --success-border: #065f46;
+    
+    --danger-color: #f87171;
+    --danger-bg: #7f1d1d;
+    --danger-border: #991b1b;
+    
+    --warning-color: #fbbf24;
+    --warning-bg: #78350f;
+    --warning-border: #92400e;
+    
+    --info-color: #22d3ee;
+    --info-bg: #164e63;
+    --info-border: #0e7490;
+    
+    --bg-color: #0f172a;
+    --text-color: #f1f5f9;
+    --text-muted: #94a3b8;
+    
+    --nav-bg: #1e293b;
+    --card-bg: #1e293b;
+    --card-header-bg: #334155;
+    --input-bg: #334155;
+    
+    --border-color: #334155;
+    --hover-bg: #334155;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+/* Theme-specific adjustments */
+.theme-dark .card {
+    box-shadow: var(--shadow-md);
+}
+
+.theme-dark .search-results {
+    box-shadow: var(--shadow-lg);
+}
+
+.theme-dark .navbar {
+    box-shadow: var(--shadow-sm);
+}
+
+/* Chart theme adjustments */
+.theme-dark .chart-container {
+    filter: brightness(0.9);
+}
+
+/* Scrollbar styling */
+.theme-light ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.theme-light ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.theme-light ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.theme-light ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.theme-dark ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.theme-dark ::-webkit-scrollbar-track {
+    background: #334155;
+}
+
+.theme-dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+}
+
+.theme-dark ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Animation for theme transitions */
+* {
+    transition: background-color 0.3s ease, 
+                color 0.3s ease, 
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+/* Focus states for accessibility */
+.theme-light *:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.theme-dark *:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .theme-light {
+        --border-color: #000000;
+        --text-color: #000000;
+        --bg-color: #ffffff;
+    }
+    
+    .theme-dark {
+        --border-color: #ffffff;
+        --text-color: #ffffff;
+        --bg-color: #000000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    .theme-light,
+    .theme-dark {
+        --bg-color: white;
+        --text-color: black;
+        --card-bg: white;
+        --border-color: #ccc;
+    }
+    
+    .navbar,
+    .footer,
+    .btn,
+    .alert {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ccc;
+        box-shadow: none;
+        break-inside: avoid;
+    }
+    
+    .page-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 1rem;
+    }
+}

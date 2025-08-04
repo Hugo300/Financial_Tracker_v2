@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Financial Tracker{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-tachometer-alt"></i>
+        Dashboard
+    </h1>
+    <div class="header-actions">
+        <button id="refresh-data" class="btn btn-primary">
+            <i class="fas fa-sync-alt"></i>
+            Refresh Data
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Net Worth</h3>
+            <i class="fas fa-wallet"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value" id="net-worth">
+                {{ net_worth|currency(settings.currency) }}
+            </div>
+            <div class="summary-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +2.5% this month
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Total Assets</h3>
+            <i class="fas fa-coins"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value" id="total-assets">
+                {{ account_summary.total_assets|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                {{ account_summary.total_accounts }} accounts
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Portfolio Value</h3>
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value" id="portfolio-value">
+                {{ portfolio_summary.total_value|currency(settings.currency) }}
+            </div>
+            <div class="summary-change {% if portfolio_summary.total_gain_loss >= 0 %}positive{% else %}negative{% endif %}" id="portfolio-change">
+                {% if portfolio_summary.total_gain_loss >= 0 %}
+                    <i class="fas fa-arrow-up"></i>
+                    +{{ portfolio_summary.total_gain_loss|currency(settings.currency) }}
+                {% else %}
+                    <i class="fas fa-arrow-down"></i>
+                    {{ portfolio_summary.total_gain_loss|currency(settings.currency) }}
+                {% endif %}
+                ({{ portfolio_summary.total_gain_loss_percentage|percentage }}%)
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Monthly Income</h3>
+            <i class="fas fa-arrow-circle-up"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value">
+                {{ transaction_summary.total_income|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                This month
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Monthly Expenses</h3>
+            <i class="fas fa-arrow-circle-down"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value">
+                {{ transaction_summary.total_expenses|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                This month
+            </div>
+        </div>
+    </div>
+
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3>Net Income</h3>
+            <i class="fas fa-balance-scale"></i>
+        </div>
+        <div class="card-body">
+            <div class="summary-value {% if transaction_summary.net_income >= 0 %}positive{% else %}negative{% endif %}">
+                {{ transaction_summary.net_income|currency(settings.currency) }}
+            </div>
+            <div class="summary-detail">
+                This month
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Recent Activity -->
+<div class="dashboard-grid">
+    <!-- Spending Chart -->
+    <div class="card chart-card">
+        <div class="card-header">
+            <h3>Spending by Category</h3>
+            <div class="chart-controls">
+                <select id="spending-period" class="form-select">
+                    <option value="30">Last 30 days</option>
+                    <option value="90">Last 3 months</option>
+                    <option value="365">Last year</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <canvas id="spending-chart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Recent Transactions</h3>
+            <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-sm btn-outline">
+                View All
+            </a>
+        </div>
+        <div class="card-body">
+            {% if recent_transactions %}
+                <div class="transaction-list">
+                    {% for transaction in recent_transactions %}
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-description">
+                                    {{ transaction.description }}
+                                </div>
+                                <div class="transaction-meta">
+                                    {{ transaction.date }} • {{ transaction.account.name }}
+                                </div>
+                            </div>
+                            <div class="transaction-amount {% if transaction.amount >= 0 %}positive{% else %}negative{% endif %}">
+                                {{ transaction.amount|currency(settings.currency) }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-receipt"></i>
+                    <p>No recent transactions</p>
+                    <a href="{{ url_for('transactions.create_transaction') }}" class="btn btn-primary">
+                        Add Transaction
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Account Balances -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Account Balances</h3>
+            <a href="{{ url_for('accounts.list_accounts') }}" class="btn btn-sm btn-outline">
+                Manage
+            </a>
+        </div>
+        <div class="card-body">
+            {% if account_summary.balances_by_type %}
+                <div class="balance-list">
+                    {% for account_type, balance in account_summary.balances_by_type.items() %}
+                        <div class="balance-item">
+                            <div class="balance-type">
+                                {{ account_type.replace('_', ' ').title() }}
+                            </div>
+                            <div class="balance-amount">
+                                {{ balance|currency(settings.currency) }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-university"></i>
+                    <p>No accounts yet</p>
+                    <a href="{{ url_for('accounts.create_account') }}" class="btn btn-primary">
+                        Add Account
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top Holdings -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Top Holdings</h3>
+            <a href="{{ url_for('stocks.list_stocks') }}" class="btn btn-sm btn-outline">
+                Portfolio
+            </a>
+        </div>
+        <div class="card-body">
+            {% if portfolio_summary.holdings %}
+                <div class="holdings-list">
+                    {% for holding in portfolio_summary.holdings[:5] %}
+                        <div class="holding-item">
+                            <div class="holding-info">
+                                <div class="holding-symbol">{{ holding.symbol }}</div>
+                                <div class="holding-shares">{{ holding.shares }} shares</div>
+                            </div>
+                            <div class="holding-value">
+                                <div class="current-value">{{ holding.current_value|currency(settings.currency) }}</div>
+                                <div class="gain-loss {% if holding.gain_loss >= 0 %}positive{% else %}negative{% endif %}">
+                                    {{ holding.gain_loss_percentage|percentage }}%
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-chart-area"></i>
+                    <p>No stock holdings</p>
+                    <a href="{{ url_for('stocks.add_stock') }}" class="btn btn-primary">
+                        Add Stock
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize spending chart
+const chartData = {{ chart_data|tojson }};
+const ctx = document.getElementById('spending-chart').getContext('2d');
+const spendingChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: chartData.categories,
+        datasets: [{
+            data: chartData.amounts,
+            backgroundColor: [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Refresh data functionality
+document.getElementById('refresh-data').addEventListener('click', function() {
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    
+    fetch('/api/dashboard/refresh')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update summary values
+                document.getElementById('net-worth').textContent = 
+                    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.data.net_worth);
+                document.getElementById('total-assets').textContent = 
+                    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.data.total_assets);
+                document.getElementById('portfolio-value').textContent = 
+                    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.data.portfolio_value);
+                
+                // Show success message
+                showAlert('Data refreshed successfully', 'success');
+            } else {
+                showAlert('Failed to refresh data', 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error refreshing data', 'error');
+        })
+        .finally(() => {
+            this.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
+        });
+});
+</script>
+{% endblock %}

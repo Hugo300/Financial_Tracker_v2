@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if transaction %}
+        Edit Stock Transaction - Financial Tracker
+    {% else %}
+        Record Stock Transaction - Financial Tracker
+    {% endif %}
+{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-exchange-alt"></i>
+        {% if transaction %}
+            Edit Stock Transaction
+        {% else %}
+            Record Stock Transaction
+        {% endif %}
+    </h1>
+    <div class="header-actions">
+        <a href="{{ url_for('stocks.list_stocks') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Portfolio
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <h3>Transaction Details</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="transaction-form">
+                <div class="form-grid">
+                    <!-- Account Selection -->
+                    <div class="form-group">
+                        <label for="account_id" class="form-label">
+                            Brokerage Account <span class="required">*</span>
+                        </label>
+                        <select name="account_id" id="account_id" class="form-select" required>
+                            <option value="">Select an account...</option>
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}" 
+                                    {% if transaction and transaction.account_id == account.id %}selected{% endif %}
+                                    {% if request.args.get('account_id') == account.id|string %}selected{% endif %}>
+                                    {{ account.name }}
+                                    {% if account.institution %}({{ account.institution }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if not accounts %}
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                No brokerage accounts found. 
+                                <a href="{{ url_for('accounts.create_account') }}">Create one first</a>.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Stock Selection -->
+                    <div class="form-group">
+                        <label for="stock_id" class="form-label">
+                            Stock <span class="required">*</span>
+                        </label>
+                        <select name="stock_id" id="stock_id" class="form-select" required>
+                            <option value="">Select a stock...</option>
+                            {% for stock in stocks %}
+                                <option value="{{ stock.id }}" 
+                                    data-symbol="{{ stock.symbol }}"
+                                    data-name="{{ stock.name }}"
+                                    data-price="{{ stock.last_price or 0 }}"
+                                    {% if transaction and transaction.stock_id == stock.id %}selected{% endif %}
+                                    {% if request.args.get('stock_id') == stock.id|string %}selected{% endif %}>
+                                    {{ stock.symbol }} - {{ stock.name }}
+                                    {% if stock.last_price %}
+                                        ({{ stock.last_price|currency(settings.currency) }})
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">
+                            Don't see your stock? 
+                            <a href="{{ url_for('stocks.add_stock') }}" target="_blank">Add it first</a>.
+                        </div>
+                    </div>
+
+                    <!-- Transaction Type -->
+                    <div class="form-group">
+                        <label for="transaction_type" class="form-label">
+                            Transaction Type <span class="required">*</span>
+                        </label>
+                        <select name="transaction_type" id="transaction_type" class="form-select" required>
+                            <option value="">Select type...</option>
+                            {% for type in transaction_types %}
+                                {% if type.value in ['buy', 'sell'] %}
+                                    <option value="{{ type.value }}" 
+                                        {% if transaction and transaction.transaction_type == type %}selected{% endif %}>
+                                        {{ type.value.title() }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Transaction Date -->
+                    <div class="form-group">
+                        <label for="date" class="form-label">
+                            Transaction Date <span class="required">*</span>
+                        </label>
+                        <input type="date" name="date" id="date" class="form-input" required
+                               value="{% if transaction %}{{ transaction.date.strftime('%Y-%m-%d') }}{% endif %}">
+                    </div>
+
+                    <!-- Number of Shares -->
+                    <div class="form-group">
+                        <label for="shares" class="form-label">
+                            Number of Shares <span class="required">*</span>
+                        </label>
+                        <input type="number" name="shares" id="shares" class="form-input" 
+                               step="0.000001" min="0.000001" required
+                               value="{% if transaction %}{{ transaction.shares }}{% endif %}"
+                               placeholder="0.000000">
+                        <div class="form-help">
+                            Enter the number of shares (supports fractional shares)
+                        </div>
+                    </div>
+
+                    <!-- Price per Share -->
+                    <div class="form-group">
+                        <label for="price_per_share" class="form-label">
+                            Price per Share <span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-prefix">{{ settings.currency }}</span>
+                            <input type="number" name="price_per_share" id="price_per_share" class="form-input" 
+                                   step="0.01" min="0.01" required
+                                   value="{% if transaction %}{{ transaction.price_per_share }}{% endif %}"
+                                   placeholder="0.00" data-currency>
+                        </div>
+                        <div class="form-help">
+                            <button type="button" id="use-current-price" class="btn-link" style="display: none;">
+                                Use current market price
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Fees -->
+                    <div class="form-group">
+                        <label for="fees" class="form-label">
+                            Transaction Fees
+                        </label>
+                        <div class="input-group">
+                            <span class="input-prefix">{{ settings.currency }}</span>
+                            <input type="number" name="fees" id="fees" class="form-input" 
+                                   step="0.01" min="0" 
+                                   value="{% if transaction %}{{ transaction.fees }}{% else %}0.00{% endif %}"
+                                   placeholder="0.00" data-currency>
+                        </div>
+                        <div class="form-help">
+                            Commission, fees, and other transaction costs
+                        </div>
+                    </div>
+
+                    <!-- Total Amount (calculated) -->
+                    <div class="form-group">
+                        <label class="form-label">Total Amount</label>
+                        <div class="calculated-field">
+                            <span id="total-amount">{{ settings.currency }}0.00</span>
+                        </div>
+                        <div class="form-help">
+                            Automatically calculated: (shares × price) + fees
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="notes" class="form-label">Notes</label>
+                    <textarea name="notes" id="notes" class="form-textarea" rows="3" 
+                              placeholder="Optional notes about this transaction...">{% if transaction %}{{ transaction.notes }}{% endif %}</textarea>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if transaction %}Update Transaction{% else %}Record Transaction{% endif %}
+                    </button>
+                    <a href="{{ url_for('stocks.list_stocks') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    {% if transaction %}
+                        <button type="button" class="btn btn-danger" id="delete-transaction">
+                            <i class="fas fa-trash"></i>
+                            Delete Transaction
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transaction Preview -->
+    <div class="card" id="transaction-preview" style="display: none;">
+        <div class="card-header">
+            <h3>Transaction Preview</h3>
+        </div>
+        <div class="card-body">
+            <div class="preview-content">
+                <div class="preview-row">
+                    <span class="preview-label">Action:</span>
+                    <span id="preview-action" class="preview-value"></span>
+                </div>
+                <div class="preview-row">
+                    <span class="preview-label">Stock:</span>
+                    <span id="preview-stock" class="preview-value"></span>
+                </div>
+                <div class="preview-row">
+                    <span class="preview-label">Shares:</span>
+                    <span id="preview-shares" class="preview-value"></span>
+                </div>
+                <div class="preview-row">
+                    <span class="preview-label">Price:</span>
+                    <span id="preview-price" class="preview-value"></span>
+                </div>
+                <div class="preview-row">
+                    <span class="preview-label">Fees:</span>
+                    <span id="preview-fees" class="preview-value"></span>
+                </div>
+                <div class="preview-row total-row">
+                    <span class="preview-label">Total Cost:</span>
+                    <span id="preview-total" class="preview-value"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    gap: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.required {
+    color: var(--danger-color);
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    z-index: 1;
+}
+
+.input-group .form-input {
+    padding-left: 2rem;
+}
+
+.calculated-field {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    background-color: var(--card-header-bg);
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.form-help {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.form-help a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.form-help a:hover {
+    text-decoration: underline;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.875rem;
+    padding: 0;
+}
+
+.btn-link:hover {
+    color: var(--primary-hover);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.preview-row:last-child {
+    border-bottom: none;
+}
+
+.total-row {
+    font-weight: 600;
+    font-size: 1.125rem;
+    border-top: 2px solid var(--border-color);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+}
+
+.preview-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.preview-value {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.field-error {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.field-invalid {
+    border-color: var(--danger-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-container {
+        max-width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .preview-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .preview-label {
+        font-size: 0.875rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('transaction-form');
+    const stockSelect = document.getElementById('stock_id');
+    const priceInput = document.getElementById('price_per_share');
+    const sharesInput = document.getElementById('shares');
+    const feesInput = document.getElementById('fees');
+    const totalAmountSpan = document.getElementById('total-amount');
+    const useCurrentPriceBtn = document.getElementById('use-current-price');
+    const transactionTypeSelect = document.getElementById('transaction_type');
+    const preview = document.getElementById('transaction-preview');
+
+    // Currency symbol from settings
+    const currencySymbol = '{{ settings.currency }}';
+
+    // Update total amount calculation
+    function updateTotalAmount() {
+        const shares = parseFloat(sharesInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const fees = parseFloat(feesInput.value) || 0;
+
+        const subtotal = shares * price;
+        const total = subtotal + fees;
+
+        totalAmountSpan.textContent = currencySymbol + total.toFixed(2);
+
+        // Update preview if visible
+        updatePreview();
+    }
+
+    // Update preview
+    function updatePreview() {
+        const stockOption = stockSelect.options[stockSelect.selectedIndex];
+        const transactionType = transactionTypeSelect.value;
+        const shares = parseFloat(sharesInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const fees = parseFloat(feesInput.value) || 0;
+
+        if (stockOption && transactionType && shares > 0 && price > 0) {
+            document.getElementById('preview-action').textContent = transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
+            document.getElementById('preview-stock').textContent = stockOption.dataset.symbol + ' - ' + stockOption.dataset.name;
+            document.getElementById('preview-shares').textContent = shares.toLocaleString();
+            document.getElementById('preview-price').textContent = currencySymbol + price.toFixed(2);
+            document.getElementById('preview-fees').textContent = currencySymbol + fees.toFixed(2);
+            document.getElementById('preview-total').textContent = currencySymbol + (shares * price + fees).toFixed(2);
+
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // Handle stock selection change
+    stockSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption && selectedOption.dataset.price && parseFloat(selectedOption.dataset.price) > 0) {
+            useCurrentPriceBtn.style.display = 'inline-block';
+            useCurrentPriceBtn.onclick = function() {
+                priceInput.value = parseFloat(selectedOption.dataset.price).toFixed(2);
+                updateTotalAmount();
+            };
+        } else {
+            useCurrentPriceBtn.style.display = 'none';
+        }
+        updatePreview();
+    });
+
+    // Add event listeners for calculation updates
+    [sharesInput, priceInput, feesInput, transactionTypeSelect].forEach(input => {
+        input.addEventListener('input', updateTotalAmount);
+        input.addEventListener('change', updateTotalAmount);
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.field-error').forEach(error => error.remove());
+        document.querySelectorAll('.field-invalid').forEach(field => field.classList.remove('field-invalid'));
+
+        // Validate required fields
+        const requiredFields = [
+            { field: document.getElementById('account_id'), message: 'Please select a brokerage account' },
+            { field: stockSelect, message: 'Please select a stock' },
+            { field: transactionTypeSelect, message: 'Please select a transaction type' },
+            { field: document.getElementById('date'), message: 'Please enter a transaction date' },
+            { field: sharesInput, message: 'Please enter the number of shares' },
+            { field: priceInput, message: 'Please enter the price per share' }
+        ];
+
+        requiredFields.forEach(({ field, message }) => {
+            if (!field.value.trim()) {
+                showFieldError(field, message);
+                isValid = false;
+            }
+        });
+
+        // Validate numeric fields
+        const shares = parseFloat(sharesInput.value);
+        if (shares <= 0) {
+            showFieldError(sharesInput, 'Number of shares must be greater than 0');
+            isValid = false;
+        }
+
+        const price = parseFloat(priceInput.value);
+        if (price <= 0) {
+            showFieldError(priceInput, 'Price per share must be greater than 0');
+            isValid = false;
+        }
+
+        const fees = parseFloat(feesInput.value);
+        if (fees < 0) {
+            showFieldError(feesInput, 'Fees cannot be negative');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
+    // Helper function to show field errors
+    function showFieldError(field, message) {
+        field.classList.add('field-invalid');
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+
+        field.parentNode.appendChild(errorDiv);
+    }
+
+    // Delete transaction handler
+    const deleteBtn = document.getElementById('delete-transaction');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this transaction? This action cannot be undone.')) {
+                // Create a form to submit the delete request
+                const deleteForm = document.createElement('form');
+                deleteForm.method = 'POST';
+                deleteForm.action = '{{ url_for("stocks.delete_stock_transaction", transaction_id=transaction.id) if transaction else "#" }}';
+
+                // No CSRF token needed for now
+
+                document.body.appendChild(deleteForm);
+                deleteForm.submit();
+            }
+        });
+    }
+
+    // Set default date to today if no transaction
+    const dateInput = document.getElementById('date');
+    if (dateInput && !dateInput.value) {
+        const today = new Date();
+        const formattedDate = today.getFullYear() + '-' +
+            String(today.getMonth() + 1).padStart(2, '0') + '-' +
+            String(today.getDate()).padStart(2, '0');
+        dateInput.value = formattedDate;
+    }
+
+    // Initialize calculations
+    updateTotalAmount();
+
+    // Trigger stock selection change to show current price button if applicable
+    if (stockSelect.value) {
+        stockSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+{% endblock %}
