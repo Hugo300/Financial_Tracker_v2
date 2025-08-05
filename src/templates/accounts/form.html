@@ -1,0 +1,671 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if account %}
+        Edit Account - Financial Tracker
+    {% else %}
+        Add Account - Financial Tracker
+    {% endif %}
+{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-university"></i>
+        {% if account %}
+            Edit Account
+        {% else %}
+            Add Account
+        {% endif %}
+    </h1>
+    <div class="header-actions">
+        <a href="{{ url_for('accounts.list_accounts') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Accounts
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <h3>Account Information</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="account-form">
+                <div class="form-grid">
+                    <!-- Account Name -->
+                    <div class="form-group">
+                        <label for="name" class="form-label">
+                            Account Name <span class="required">*</span>
+                        </label>
+                        <input type="text" name="name" id="name" class="form-input" required
+                               value="{% if account %}{{ account.name }}{% endif %}"
+                               placeholder="e.g., Chase Checking, Savings Account">
+                        <div class="form-help">
+                            A descriptive name for your account
+                        </div>
+                    </div>
+
+                    <!-- Account Type -->
+                    <div class="form-group">
+                        <label for="account_type" class="form-label">
+                            Account Type <span class="required">*</span>
+                        </label>
+                        <select name="account_type" id="account_type" class="form-select" required>
+                            <option value="">Select account type...</option>
+                            {% for type in account_types %}
+                                <option value="{{ type.value }}" 
+                                    {% if account and account.account_type == type %}selected{% endif %}>
+                                    {{ type.value.replace('_', ' ').title() }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">
+                            Choose the type that best describes this account
+                        </div>
+                    </div>
+
+                    <!-- Institution -->
+                    <div class="form-group">
+                        <label for="institution" class="form-label">
+                            Financial Institution
+                        </label>
+                        <input type="text" name="institution" id="institution" class="form-input"
+                               value="{% if account %}{{ account.institution }}{% endif %}"
+                               placeholder="e.g., Chase Bank, Wells Fargo">
+                        <div class="form-help">
+                            The bank or financial institution (optional)
+                        </div>
+                    </div>
+
+                    <!-- Account Number -->
+                    <div class="form-group">
+                        <label for="account_number" class="form-label">
+                            Account Number/ID
+                        </label>
+                        <input type="text" name="account_number" id="account_number" class="form-input"
+                               value="{% if account %}{{ account.account_number }}{% endif %}"
+                               placeholder="Last 4 digits or account identifier">
+                        <div class="form-help">
+                            Last 4 digits or a reference identifier (optional)
+                        </div>
+                    </div>
+
+                    <!-- Initial Balance -->
+                    <div class="form-group">
+                        <label for="balance" class="form-label">
+                            {% if account %}Current Balance{% else %}Initial Balance{% endif %}
+                        </label>
+                        <div class="input-group">
+                            <span class="input-prefix">{{ settings.currency }}</span>
+                            <input type="number" name="balance" id="balance" class="form-input" 
+                                   step="0.01" 
+                                   value="{% if account %}{{ account.balance }}{% else %}0.00{% endif %}"
+                                   placeholder="0.00" data-currency>
+                        </div>
+                        <div class="form-help">
+                            {% if account %}
+                                Current account balance
+                            {% else %}
+                                Starting balance for this account
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Currency -->
+                    <div class="form-group">
+                        <label for="currency" class="form-label">
+                            Currency
+                        </label>
+                        <select name="currency" id="currency" class="form-select">
+                            <option value="$" {% if not account or account.currency == '$' %}selected{% endif %}>$ (USD)</option>
+                            <option value="€" {% if account and account.currency == '€' %}selected{% endif %}>€ (EUR)</option>
+                            <option value="£" {% if account and account.currency == '£' %}selected{% endif %}>£ (GBP)</option>
+                            <option value="¥" {% if account and account.currency == '¥' %}selected{% endif %}>¥ (JPY)</option>
+                            <option value="C$" {% if account and account.currency == 'C$' %}selected{% endif %}>C$ (CAD)</option>
+                            <option value="A$" {% if account and account.currency == 'A$' %}selected{% endif %}>A$ (AUD)</option>
+                            <option value="₹" {% if account and account.currency == '₹' %}selected{% endif %}>₹ (INR)</option>
+                        </select>
+                        <div class="form-help">
+                            Currency for this account
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea name="description" id="description" class="form-textarea" rows="3"
+                              placeholder="Optional notes about this account...">{% if account %}{{ account.description }}{% endif %}</textarea>
+                    <div class="form-help">
+                        Additional notes or details about this account
+                    </div>
+                </div>
+
+                <!-- Account Status -->
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_active" 
+                               {% if not account or account.is_active %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        Account is active
+                    </label>
+                    <div class="form-help">
+                        Inactive accounts are hidden from most views but data is preserved
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if account %}Update Account{% else %}Create Account{% endif %}
+                    </button>
+                    <a href="{{ url_for('accounts.list_accounts') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    {% if account %}
+                        <button type="button" class="btn btn-danger" id="delete-account">
+                            <i class="fas fa-trash"></i>
+                            Delete Account
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Account Preview -->
+    <div class="card" id="account-preview" style="display: none;">
+        <div class="card-header">
+            <h3>Account Preview</h3>
+        </div>
+        <div class="card-body">
+            <div class="preview-account-card">
+                <div class="preview-header">
+                    <div class="preview-info">
+                        <h4 id="preview-name">Account Name</h4>
+                        <div id="preview-type-institution" class="preview-subtitle"></div>
+                    </div>
+                    <div id="preview-status" class="preview-status"></div>
+                </div>
+                <div class="preview-balance">
+                    <div id="preview-balance-amount" class="preview-amount"></div>
+                    <div id="preview-account-number" class="preview-number"></div>
+                </div>
+                <div id="preview-description" class="preview-description"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Type Guide -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                Account Type Guide
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="type-guide">
+                <div class="type-item">
+                    <div class="type-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="type-content">
+                        <h4>Checking</h4>
+                        <p>Day-to-day spending accounts with easy access to funds</p>
+                    </div>
+                </div>
+
+                <div class="type-item">
+                    <div class="type-icon">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <div class="type-content">
+                        <h4>Savings</h4>
+                        <p>Interest-bearing accounts for saving money</p>
+                    </div>
+                </div>
+
+                <div class="type-item">
+                    <div class="type-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="type-content">
+                        <h4>Brokerage</h4>
+                        <p>Investment accounts for trading stocks and securities</p>
+                    </div>
+                </div>
+
+                <div class="type-item">
+                    <div class="type-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="type-content">
+                        <h4>Credit Card</h4>
+                        <p>Credit accounts for purchases and building credit</p>
+                    </div>
+                </div>
+
+                <div class="type-item">
+                    <div class="type-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="type-content">
+                        <h4>Cash</h4>
+                        <p>Physical cash and petty cash funds</p>
+                    </div>
+                </div>
+
+                <div class="type-item">
+                    <div class="type-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <div class="type-content">
+                        <h4>Loan</h4>
+                        <p>Borrowed money that needs to be repaid</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    gap: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.required {
+    color: var(--danger-color);
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    z-index: 1;
+}
+
+.input-group .form-input {
+    padding-left: 2rem;
+}
+
+.form-help {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.preview-account-card {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    background-color: var(--card-header-bg);
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.preview-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.preview-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.preview-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.status-inactive {
+    background-color: var(--danger-bg);
+    color: var(--danger-color);
+}
+
+.preview-balance {
+    margin-bottom: 1rem;
+}
+
+.preview-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+}
+
+.preview-number {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.preview-description {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.type-guide {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.type-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background-color: var(--card-header-bg);
+}
+
+.type-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    width: 2.5rem;
+    text-align: center;
+}
+
+.type-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.type-content p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.field-error {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.field-invalid {
+    border-color: var(--danger-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-container {
+        max-width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .type-guide {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .type-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .type-icon {
+        align-self: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .preview-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .preview-amount {
+        font-size: 1.25rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('account-form');
+    const nameInput = document.getElementById('name');
+    const typeSelect = document.getElementById('account_type');
+    const institutionInput = document.getElementById('institution');
+    const accountNumberInput = document.getElementById('account_number');
+    const balanceInput = document.getElementById('balance');
+    const currencySelect = document.getElementById('currency');
+    const descriptionTextarea = document.getElementById('description');
+    const isActiveCheckbox = document.querySelector('input[name="is_active"]');
+    const deleteBtn = document.getElementById('delete-account');
+    const preview = document.getElementById('account-preview');
+
+    // Update preview when form fields change
+    [nameInput, typeSelect, institutionInput, accountNumberInput, balanceInput, currencySelect, descriptionTextarea, isActiveCheckbox].forEach(input => {
+        if (input) {
+            input.addEventListener('input', updatePreview);
+            input.addEventListener('change', updatePreview);
+        }
+    });
+
+    // Update preview
+    function updatePreview() {
+        const name = nameInput.value.trim() || 'Account Name';
+        const type = typeSelect.value ? typeSelect.options[typeSelect.selectedIndex].text : '';
+        const institution = institutionInput.value.trim();
+        const accountNumber = accountNumberInput.value.trim();
+        const balance = parseFloat(balanceInput.value) || 0;
+        const currency = currencySelect.value;
+        const description = descriptionTextarea.value.trim();
+        const isActive = isActiveCheckbox.checked;
+
+        // Update preview elements
+        document.getElementById('preview-name').textContent = name;
+
+        let subtitle = type;
+        if (institution) {
+            subtitle += institution ? ` • ${institution}` : '';
+        }
+        document.getElementById('preview-type-institution').textContent = subtitle;
+
+        const statusElement = document.getElementById('preview-status');
+        statusElement.textContent = isActive ? 'Active' : 'Inactive';
+        statusElement.className = `preview-status ${isActive ? 'status-active' : 'status-inactive'}`;
+
+        document.getElementById('preview-balance-amount').textContent = `${currency}${balance.toFixed(2)}`;
+
+        const numberElement = document.getElementById('preview-account-number');
+        if (accountNumber) {
+            numberElement.textContent = accountNumber.length > 4 ? `****${accountNumber.slice(-4)}` : accountNumber;
+            numberElement.style.display = 'block';
+        } else {
+            numberElement.style.display = 'none';
+        }
+
+        const descElement = document.getElementById('preview-description');
+        if (description) {
+            descElement.textContent = description;
+            descElement.style.display = 'block';
+        } else {
+            descElement.style.display = 'none';
+        }
+
+        // Show preview if any meaningful data is entered
+        if (name !== 'Account Name' || type || institution || accountNumber || balance !== 0 || description) {
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.field-error').forEach(error => error.remove());
+        document.querySelectorAll('.field-invalid').forEach(field => field.classList.remove('field-invalid'));
+
+        // Validate required fields
+        if (!nameInput.value.trim()) {
+            showFieldError(nameInput, 'Account name is required');
+            isValid = false;
+        }
+
+        if (!typeSelect.value) {
+            showFieldError(typeSelect, 'Please select an account type');
+            isValid = false;
+        }
+
+        // Validate balance
+        const balance = parseFloat(balanceInput.value);
+        if (isNaN(balance)) {
+            showFieldError(balanceInput, 'Please enter a valid balance');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
+    // Helper function to show field errors
+    function showFieldError(field, message) {
+        field.classList.add('field-invalid');
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+
+        field.parentNode.appendChild(errorDiv);
+    }
+
+    // Delete account handler
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            const accountName = nameInput.value.trim() || 'this account';
+            if (confirm(`Are you sure you want to delete ${accountName}? This action cannot be undone and will also delete all associated transactions.`)) {
+                // Create a form to submit the delete request
+                const deleteForm = document.createElement('form');
+                deleteForm.method = 'POST';
+                deleteForm.action = '{{ url_for("accounts.delete_account", account_id=account.id) if account else "#" }}';
+
+                document.body.appendChild(deleteForm);
+                deleteForm.submit();
+            }
+        });
+    }
+
+    // Initialize preview
+    updatePreview();
+});
+</script>
+{% endblock %}
