@@ -6,6 +6,8 @@ This module tests critical user flows through the web interface.
 
 import pytest
 import time
+import socket
+import threading
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -13,49 +15,69 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
+from werkzeug.serving import make_server
 
 
 @pytest.fixture(scope="module")
-def driver():
-    """Create a Selenium WebDriver instance."""
+def browser(live_server):
+    """
+    Create a Selenium WebDriver instance with headless options.
+    This fixture depends on the `live_server` fixture to ensure the
+    Flask application is running before the browser starts.
+    """
+    # Configure headless Chrome options for CI/server environments
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode for CI
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
     
     try:
-        driver = webdriver.Chrome(options=chrome_options)
+        # Use webdriver-manager to automatically download and manage the driver
+        service = webdriver.chrome.service.Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        
+        # Set an implicit wait time for elements to load
         driver.implicitly_wait(10)
+        
+        # Yield the driver and its base URL
         yield driver
     except Exception as e:
         pytest.skip(f"Chrome WebDriver not available: {e}")
     finally:
+        # The 'quit' method ensures all resources are released
         if 'driver' in locals():
             driver.quit()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def live_server(app):
-    """Start a live server for testing."""
-    import threading
-    import socket
-    from werkzeug.serving import make_server
-    
-    # Find a free port
+    """Start a live server for testing, running in a separate thread."""
+    # Find a free port to avoid conflicts
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('localhost', 0))
     port = sock.getsockname()[1]
     sock.close()
+
+    # The server needs to run with a SERVER_NAME to generate URLs correctly.
+    app.config['SERVER_NAME'] = f'localhost:{port}'
     
+    # Create a server instance
     server = make_server('localhost', port, app, threaded=True)
-    thread = threading.Thread(target=server.serve_forever)
-    thread.daemon = True
+    
+    # Start the server in a new thread
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     
+    # Wait for the server to be ready before yielding the URL
+    # This is a simple wait; for a more robust check, you could poll the server.
+    time.sleep(1) 
+    
+    # Yield the server's base URL for tests to use
     yield f"http://localhost:{port}"
     
+    # Cleanup: shutdown the server after all tests in the session are complete
     server.shutdown()
 
 
