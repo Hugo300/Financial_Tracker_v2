@@ -18,10 +18,13 @@ from flask import Flask
 src_path = Path(__file__).parent.parent / 'src'
 sys.path.insert(0, str(src_path))
 
+from src.config import get_config
 from src.web.app import create_app
 from src.models import db, Account, AccountType, Transaction, TransactionType, TransactionCategory
 from src.models import Stock, Holding, StockTransaction, StockTransactionType, UserSettings
 
+#TODO: Add ui tests for other pages now that we have a validated example for stocks main page
+#TODO: Expand stock ui tests
 
 @pytest.fixture(scope='session')
 def app() -> Flask:
@@ -32,6 +35,11 @@ def app() -> Flask:
     # Set test configuration
     os.environ['FLASK_ENV'] = 'testing'
     os.environ['DATABASE_URL'] = f'sqlite:///{db_path}'
+
+    # Get host and port from environment or use defaults
+    config = get_config('testing')
+    os.environ["FLASK_HOST"] = str(config.FLASK_HOST)
+    os.environ["FLASK_PORT"] = str(config.FLASK_PORT)
     
     app = create_app('testing')
     
@@ -49,18 +57,15 @@ def app() -> Flask:
     os.close(db_fd)
     os.unlink(db_path)
 
-
 @pytest.fixture
 def client(app):
     """Create test client."""
     return app.test_client()
 
-
 @pytest.fixture
 def runner(app):
     """Create test CLI runner."""
     return app.test_cli_runner()
-
 
 @pytest.fixture
 def db_session(app):
@@ -81,6 +86,15 @@ def db_session(app):
         db.session.commit()
         db.session.remove()
 
+# Configuration for pytest-playwright
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    """Configure browser context for tests."""
+    return {
+        **browser_context_args,
+        "viewport": {"width": 1280, "height": 720},
+        "ignore_https_errors": True,
+    }
 
 @pytest.fixture
 def sample_account(db_session):
