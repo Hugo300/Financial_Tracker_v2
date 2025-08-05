@@ -137,10 +137,10 @@ class Account(BaseModel):
     def get_recent_transactions(self, limit: int = 10) -> List['Transaction']:
         """
         Get recent transactions for this account.
-        
+
         Args:
             limit: Maximum number of transactions to return
-            
+
         Returns:
             List of recent transactions
         """
@@ -151,6 +151,38 @@ class Account(BaseModel):
             .limit(limit)
             .all()
         )
+
+    def get_income_total(self) -> Decimal:
+        """
+        Get total income for this account.
+
+        Returns:
+            Total income amount
+        """
+        from .transaction import Transaction, TransactionType
+        result = (
+            self.transactions
+            .filter(Transaction.transaction_type == TransactionType.INCOME)
+            .with_entities(Transaction.amount)
+            .all()
+        )
+        return sum(row[0] for row in result) if result else Decimal('0.00')
+
+    def get_expense_total(self) -> Decimal:
+        """
+        Get total expenses for this account.
+
+        Returns:
+            Total expense amount
+        """
+        from .transaction import Transaction, TransactionType
+        result = (
+            self.transactions
+            .filter(Transaction.transaction_type == TransactionType.EXPENSE)
+            .with_entities(Transaction.amount)
+            .all()
+        )
+        return sum(row[0] for row in result) if result else Decimal('0.00')
     
     def __repr__(self) -> str:
         """String representation of the account."""
