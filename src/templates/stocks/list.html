@@ -149,7 +149,7 @@
                                         {{ holding.gain_loss|currency(settings.currency) }}
                                     {% endif %}
                                 </td>
-                                <td class="number-cell {% if holding.gain_loss_percentage >= 0 %}pos    itive{% else %}negative{% endif %}">
+                                <td class="percentage-cell {% if holding.gain_loss_percentage >= 0 %}positive{% else %}negative{% endif %}">
                                     {% if holding.gain_loss_percentage >= 0 %}
                                         <i class="fas fa-arrow-up"></i>
                                         +{{ holding.gain_loss_percentage|percentage }}%
