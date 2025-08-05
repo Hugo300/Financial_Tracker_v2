@@ -15,6 +15,7 @@ from pathlib import Path
 src_path = Path(__file__).parent / 'src'
 sys.path.insert(0, str(src_path))
 
+from src.config import get_config
 from src.web.app import create_app
 
 
@@ -42,8 +43,14 @@ def main():
     try:
         # Create Flask application
         app = create_app(config_name)
+
+        print(config_name)
         
         # Get host and port from environment or use defaults
+        config = get_config(config_name)
+        os.environ["FLASK_HOST"] = str(config.FLASK_HOST)
+        os.environ["FLASK_PORT"] = str(config.FLASK_PORT)
+
         host = os.environ.get('FLASK_HOST', '127.0.0.1')
         port = int(os.environ.get('FLASK_PORT', 5000))
         debug = config_name == 'development'
