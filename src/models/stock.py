@@ -4,7 +4,7 @@ Stock and Holdings models for the Financial Tracker application.
 This module defines models for managing stock information and portfolio holdings.
 """
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Optional, List
@@ -118,7 +118,7 @@ class Stock(BaseModel):
             price: New stock price
         """
         self.last_price = price
-        self.last_updated = datetime.utcnow()
+        self.last_updated = datetime.now(UTC)
     
     def get_total_shares(self) -> Decimal:
         """

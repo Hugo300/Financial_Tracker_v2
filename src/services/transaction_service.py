@@ -8,7 +8,7 @@ CRUD operations, categorization, and transaction analytics.
 import logging
 from decimal import Decimal
 from typing import List, Optional, Dict, Any, Tuple
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, UTC
 import csv
 import io
 
@@ -211,7 +211,7 @@ class TransactionService:
                 if key in allowed_fields and hasattr(transaction, key):
                     setattr(transaction, key, value)
             
-            transaction.updated_at = datetime.utcnow()
+            transaction.updated_at = datetime.now(UTC)
             
             # Update account balance if amount or account changed
             if update_balance and ('amount' in kwargs or 'account_id' in kwargs):

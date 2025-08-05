@@ -4,7 +4,7 @@ Base model classes and database setup for the Financial Tracker application.
 This module provides the base SQLAlchemy model class and database initialization.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Any, Dict
 
 from flask_sqlalchemy import SQLAlchemy
@@ -28,8 +28,8 @@ class BaseModel(db.Model):
     __abstract__ = True
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(UTC), nullable=False)
+    updated_at = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC), nullable=False)
     
     @declared_attr
     def __tablename__(cls) -> str:
@@ -58,7 +58,7 @@ class BaseModel(db.Model):
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def save(self) -> 'BaseModel':
         """

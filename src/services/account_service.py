@@ -8,7 +8,7 @@ CRUD operations, balance management, and account analytics.
 import logging
 from decimal import Decimal
 from typing import List, Optional, Dict, Any
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, UTC
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -152,7 +152,7 @@ class AccountService:
                 if key in allowed_fields and hasattr(account, key):
                     setattr(account, key, value)
             
-            account.updated_at = datetime.utcnow()
+            account.updated_at = datetime.now(UTC)
             self.session.commit()
             
             logger.info(f"Updated account {account_id}")
@@ -215,7 +215,7 @@ class AccountService:
             
             old_balance = account.balance
             account.update_balance(amount)
-            account.updated_at = datetime.utcnow()
+            account.updated_at = datetime.now(UTC)
             
             self.session.commit()
             
