@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 from decimal import Decimal
 from datetime import date, datetime, timezone
+from flask import Flask
 
 # Add src directory to Python path
 src_path = Path(__file__).parent.parent / 'src'
@@ -23,7 +24,7 @@ from src.models import Stock, Holding, StockTransaction, StockTransactionType, U
 
 
 @pytest.fixture(scope='session')
-def app():
+def app() -> Flask:
     """Create application for testing."""
     # Create temporary database file
     db_fd, db_path = tempfile.mkstemp()
