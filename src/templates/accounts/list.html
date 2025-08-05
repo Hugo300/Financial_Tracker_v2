@@ -146,7 +146,7 @@
                         
                         <div class="account-balance">
                             <div class="balance-amount">
-                                {{ account.formatted_balance }}
+                                {{ account.balance|currency(settings.currency) }}
                             </div>
                             {% if account.account_number %}
                                 <div class="account-number">

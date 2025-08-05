@@ -11,7 +11,7 @@ from decimal import Decimal
 from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response
 
 from ...models import AccountType
-from ...services import AccountService, TransactionService
+from ...services import AccountService, TransactionService, StockService
 from ..app import get_current_user_settings, flash_success, flash_error
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ def list_accounts():
     """
     try:
         account_service = AccountService()
+        stock_service = StockService()
         
         # Get filter parameters
         account_type = request.args.get('type')
@@ -51,6 +52,11 @@ def list_accounts():
             account_type=type_filter,
             is_active=active_filter
         )
+
+        for account in accounts:
+            if account.account_type == AccountType.BROKERAGE:
+                stock_value = stock_service.get_portfolio_summary(account_id=account.id)['total_value']
+                account.balance = account.balance + stock_value
         
         # Get account summary
         summary = account_service.get_account_summary()
@@ -179,6 +185,7 @@ def view_account(account_id):
     try:
         account_service = AccountService()
         transaction_service = TransactionService()
+        stock_service = StockService()
         
         # Get account
         account = account_service.get_account(account_id)
@@ -205,9 +212,21 @@ def view_account(account_id):
         # Get balance history
         balance_history = account_service.get_balance_history(account_id, days=30)
         
+        # if its a brokerage account, get the total value of stocks
+        if account.account_type == AccountType.BROKERAGE:
+            stock_service = StockService()
+            stock_value = stock_service.get_portfolio_summary(account_id=account.id)['total_value']
+            cash_value = account.balance
+        else:
+            stock_value = Decimal('0.00')
+            cash_value = account.balance
+
+        print(account)
+        print({'cash_value': cash_value, 'stock_value': stock_value})
         return render_template(
             'accounts/detail.html',
             account=account,
+            values={'cash_value': cash_value, 'stock_value': stock_value, 'total_value': cash_value + stock_value},
             transactions=transactions,
             balance_history=balance_history,
             page=page,
@@ -292,6 +311,7 @@ def edit_account(account_id):
         
         # Handle POST request
         name = request.form.get('name', '').strip()
+        balance = request.form.get('balance', '0').strip()
         currency = request.form.get('currency', '$').strip()
         description = request.form.get('description', '').strip() or None
         institution = request.form.get('institution', '').strip() or None
@@ -308,10 +328,22 @@ def edit_account(account_id):
                 settings=get_current_user_settings()
             )
         
+        try:
+            balance = Decimal(balance)
+        except (ValueError, TypeError):
+            flash_error("Invalid balance amount.")
+            return render_template(
+                'accounts/form.html',
+                account=account,
+                account_types=AccountType,
+                settings=get_current_user_settings()
+            )
+
         # Update account
         updated_account = account_service.update_account(
             account_id=account_id,
             name=name,
+            balance=balance,
             currency=currency,
             description=description,
             institution=institution,

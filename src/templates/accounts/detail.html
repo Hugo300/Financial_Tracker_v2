@@ -60,7 +60,13 @@
             <div class="balance-section">
                 <div class="current-balance">
                     <span class="balance-label">Current Balance</span>
-                    <span class="balance-amount">{{ account.formatted_balance }}</span>
+                    <span class="balance-amount">{{ values.total_value|currency(settings.currency) }}</span>
+                    {% if account.account_type.value == 'brokerage' %}
+                        <span class="balance-ammount number">{{ values.cash_value|currency(settings.currency) }} + {{ values.stock_value|currency(settings.currency) }} in stocks</span> 
+                        <a href="{{ url_for('stocks.list_stocks', account_id=account.id) }}" class="btn btn-outline">
+                            View Portfolio
+                        </a>
+                    {% endif %}
                 </div>
                 {% if balance_history %}
                     <div class="balance-trend">
