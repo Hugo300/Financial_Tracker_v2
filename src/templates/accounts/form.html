@@ -87,7 +87,7 @@
                             Account Number/ID
                         </label>
                         <input type="text" name="account_number" id="account_number" class="form-input"
-                               value="{% if account %}{{ account.account_number }}{% endif %}"
+                               value="{% if account.account_number %}{{ account.account_number }}{% endif %}"
                                placeholder="Last 4 digits or account identifier">
                         <div class="form-help">
                             Last 4 digits or a reference identifier (optional)
@@ -587,7 +587,7 @@ document.addEventListener('DOMContentLoaded', function() {
             numberElement.textContent = accountNumber.length > 4 ? `****${accountNumber.slice(-4)}` : accountNumber;
             numberElement.style.display = 'block';
         } else {
-            numberElement.style.display = 'none';
+            numberElement.style.display = '';
         }
 
         const descElement = document.getElementById('preview-description');
