@@ -1,0 +1,316 @@
+
+/* Table styles */
+.table-container {
+    overflow-x: auto;
+}
+
+.table-wrapper {
+    position: relative;
+}
+
+.table {
+    min-width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead th {
+    text-align: left;
+    padding: 1rem;
+    background-color: var(--card-header-bg);
+    cursor: pointer;
+    position: relative;
+}
+
+.table tbody td {
+    padding: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: var(--bg-secondary-color);
+}
+
+/* Sorting indicators */
+.sortable {
+    transition: all 0.2s ease-in-out;
+}
+
+.sortable {
+    transition: all 0.2s ease-in-out;
+}
+
+.sortable::after {
+    content: "\f0dc"; /* Default sort icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-left: 0.5rem;
+    opacity: 0.3;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.sort-asc::after {
+    content: "\f0de"; /* Ascending icon */
+    opacity: 1;
+}
+
+.sort-desc::after {
+    content: "\f0dd"; /* Descending icon */
+    opacity: 1;
+}
+
+/* Hover and selected states */
+.table tbody tr:hover {
+    background-color: var(--card-header-bg);
+}
+
+.table tbody tr.selected {
+    background-color: var(--primary-hover);
+}
+
+/* Resizing styles (IMPROVEMENT: Moved from inline styles to CSS) */
+.resizable-header {
+    position: relative;
+}
+
+.column-resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
+    background-color: transparent;
+    z-index: 10;
+}
+
+/* Loading spinner */
+.table-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-color);
+    z-index: 20;
+}
+
+.table-loading i {
+    color: #4299e1;
+    font-size: 2rem;
+}
+
+/* Empty state for search */
+.table-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.table-empty h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+}
+.table-empty p {
+    margin: 0 0 1.5rem 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+}
+.table-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+
+/* Table badges and indicators */
+.table .positive {
+    color: var(--success-color);
+}
+
+.table .negative {
+    color: var(--danger-color);
+}
+
+.table .neutral {
+    color: var(--text-muted);
+}
+
+/* Table search and filter integration */
+.table-search {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.table-search input {
+    padding-right: 2.5rem;
+}
+
+.table-search .search-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+/* Table pagination improvements */
+.table-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.table-pagination .pagination-info {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.table-pagination .pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Table column sizing */
+.table td.date-cell {
+    width: 100px;
+    min-width: 100px;
+}
+
+.table td.number-cell,
+.table td.amount-cell,
+.table td.balance-cell {
+    width: 120px;
+    min-width: 120px;
+    text-align: right;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-weight: 500;
+}
+
+.table td.description-cell {
+    max-width: 250px;
+    min-width: 150px;
+}
+
+.table td.account-cell {
+    width: 150px;
+    min-width: 120px;
+}
+
+.table td.category-cell {
+    width: 120px;
+    min-width: 100px;
+}
+
+.table td.type-cell {
+    width: 100px;
+    min-width: 80px;
+}
+
+.table td.actions-cell {
+    width: 100px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.table td.symbol-cell {
+    width: 80px;
+    min-width: 60px;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-weight: 600;
+}
+
+.table td.company-cell {
+    max-width: 200px;
+    min-width: 150px;
+}
+
+.table td.shares-cell {
+    width: 100px;
+    min-width: 80px;
+    text-align: right;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+/* Table Styles */
+.table-responsive {
+    overflow-x: auto;
+    margin: -1rem;
+    padding: 1rem;
+    
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    background-color: var(--card-bg);
+}
+
+.table thead {
+    background-color: var(--card-header-bg);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+    position: relative;
+    user-select: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.table th:hover {
+    background-color: var(--primary-bg);
+}
+
+.table th.sortable::after {
+    content: '\f0dc';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.3;
+    font-size: 0.75rem;
+}
+
+.table th.sortable.sort-asc::after {
+    content: '\f0de';
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+.table th.sortable.sort-desc::after {
+    content: '\f0dd';
+    opacity: 1;
+    color: var(--primary-color);
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    color: var(--text-color);
+}
