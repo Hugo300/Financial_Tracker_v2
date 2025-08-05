@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block title %}Import Data - Financial Tracker{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-upload"></i>
+        Import Data
+    </h1>
+    <div class="header-actions">
+        <a href="{{ url_for('settings.view_settings') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Settings
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="import-container">
+    <!-- Import Status -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                Import Status
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="status-message">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Feature Coming Soon:</strong> Data import functionality is currently under development. 
+                    This feature will allow you to import transactions and account data from CSV files and other financial applications.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Planned Import Features -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-list-check"></i>
+                Planned Import Features
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-csv"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>CSV File Import</h4>
+                        <p>Import transactions from CSV files exported from banks and financial institutions.</p>
+                        <div class="feature-status">
+                            <span class="status-badge status-planned">Planned</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Bank Statement Import</h4>
+                        <p>Direct import from popular banking formats and statement files.</p>
+                        <div class="feature-status">
+                            <span class="status-badge status-planned">Planned</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Investment Data Import</h4>
+                        <p>Import stock transactions and portfolio data from brokerage accounts.</p>
+                        <div class="feature-status">
+                            <span class="status-badge status-planned">Planned</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Third-Party App Import</h4>
+                        <p>Import data from other personal finance applications and tools.</p>
+                        <div class="feature-status">
+                            <span class="status-badge status-planned">Planned</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Smart Categorization</h4>
+                        <p>Automatically categorize imported transactions based on patterns and rules.</p>
+                        <div class="feature-status">
+                            <span class="status-badge status-planned">Planned</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-check"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Data Validation</h4>
+                        <p>Comprehensive validation and error checking for imported data.</p>
+                        <div class="feature-status">
+                            <span class="status-badge status-planned">Planned</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Guidelines -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-book"></i>
+                Import Guidelines (Future)
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="guidelines">
+                <div class="guideline-section">
+                    <h4>Supported File Formats</h4>
+                    <ul class="format-list">
+                        <li><i class="fas fa-file-csv"></i> CSV (Comma Separated Values)</li>
+                        <li><i class="fas fa-file-excel"></i> Excel (.xlsx, .xls)</li>
+                        <li><i class="fas fa-file-alt"></i> Text files (.txt)</li>
+                        <li><i class="fas fa-file-code"></i> JSON format</li>
+                    </ul>
+                </div>
+
+                <div class="guideline-section">
+                    <h4>Data Requirements</h4>
+                    <ul class="requirement-list">
+                        <li>Date column (required)</li>
+                        <li>Amount column (required)</li>
+                        <li>Description or memo (recommended)</li>
+                        <li>Category (optional)</li>
+                        <li>Account information (optional)</li>
+                    </ul>
+                </div>
+
+                <div class="guideline-section">
+                    <h4>Best Practices</h4>
+                    <ul class="practice-list">
+                        <li>Ensure data is clean and properly formatted</li>
+                        <li>Remove any header or footer information</li>
+                        <li>Use consistent date formats</li>
+                        <li>Backup existing data before importing</li>
+                        <li>Review imported data for accuracy</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Data Entry -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-keyboard"></i>
+                Manual Data Entry
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="manual-entry">
+                <p>While we work on import functionality, you can manually add your financial data:</p>
+                
+                <div class="entry-options">
+                    <div class="entry-option">
+                        <div class="option-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="option-content">
+                            <h4>Add Accounts</h4>
+                            <p>Set up your bank accounts, credit cards, and investment accounts.</p>
+                            <a href="{{ url_for('accounts.create_account') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Add Account
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="entry-option">
+                        <div class="option-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="option-content">
+                            <h4>Record Transactions</h4>
+                            <p>Manually enter your income, expenses, and transfers.</p>
+                            <a href="{{ url_for('transactions.create_transaction') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Add Transaction
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="entry-option">
+                        <div class="option-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="option-content">
+                            <h4>Track Investments</h4>
+                            <p>Add stocks and record your investment transactions.</p>
+                            <a href="{{ url_for('stocks.add_stock') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Add Stock
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact for Updates -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-bell"></i>
+                Stay Updated
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="update-info">
+                <p>Want to be notified when import functionality becomes available? We're actively working on this feature and expect to release it in a future update.</p>
+                
+                <div class="update-actions">
+                    <div class="update-note">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Check back regularly for updates, or follow our development progress.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.import-container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.alert-warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-color);
+    border: 1px solid var(--warning-border);
+}
+
+.alert i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.feature-item {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background-color: var(--card-header-bg);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    width: 4rem;
+    text-align: center;
+}
+
+.feature-content {
+    flex: 1;
+}
+
+.feature-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+    font-size: 1.25rem;
+}
+
+.feature-content p {
+    margin: 0 0 1rem 0;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.feature-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-planned {
+    background-color: var(--info-bg);
+    color: var(--info-color);
+}
+
+.guidelines {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.guideline-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.125rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+.format-list,
+.requirement-list,
+.practice-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.format-list li,
+.requirement-list li,
+.practice-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-color);
+    padding: 0.5rem 0;
+}
+
+.format-list i {
+    width: 1.5rem;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.requirement-list li::before,
+.practice-list li::before {
+    content: "•";
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+
+.entry-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.entry-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background-color: var(--card-header-bg);
+}
+
+.option-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.option-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+    font-size: 1.25rem;
+}
+
+.option-content p {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.update-info p {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.update-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.update-note {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: var(--info-bg);
+    color: var(--info-color);
+    border-radius: 0.5rem;
+    border: 1px solid var(--info-border);
+}
+
+.update-note i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .import-container {
+        max-width: 100%;
+    }
+
+    .feature-item {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .feature-icon {
+        align-self: center;
+    }
+
+    .guidelines {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .entry-options {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .feature-item {
+        padding: 1rem;
+    }
+
+    .feature-icon {
+        font-size: 2rem;
+        width: 3rem;
+    }
+
+    .option-icon {
+        font-size: 2.5rem;
+    }
+
+    .entry-option {
+        padding: 1.5rem;
+    }
+
+    .alert {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .update-note {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

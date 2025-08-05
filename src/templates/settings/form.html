@@ -1,0 +1,621 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Settings - Financial Tracker{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-edit"></i>
+        Edit Settings
+    </h1>
+    <div class="header-actions">
+        <a href="{{ url_for('settings.view_settings') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Settings
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="POST" id="settings-form">
+        <!-- Appearance Settings -->
+        <div class="card-group">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-palette"></i>
+                    Appearance
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="theme" class="form-label">Theme</label>
+                        <select name="theme" id="theme" class="form-select">
+                            <option value="light" {% if settings.theme == 'light' %}selected{% endif %}>Light</option>
+                            <option value="dark" {% if settings.theme == 'dark' %}selected{% endif %}>Dark</option>
+                        </select>
+                        <div class="form-help">Choose your preferred color scheme</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="language" class="form-label">Language</label>
+                        <select name="language" id="language" class="form-select">
+                            <option value="en" {% if settings.language == 'en' %}selected{% endif %}>English</option>
+                            <option value="es" {% if settings.language == 'es' %}selected{% endif %}>Español</option>
+                            <option value="fr" {% if settings.language == 'fr' %}selected{% endif %}>Français</option>
+                            <option value="de" {% if settings.language == 'de' %}selected{% endif %}>Deutsch</option>
+                        </select>
+                        <div class="form-help">Interface language</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Settings -->
+        <div class="card-group">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-dollar-sign"></i>
+                    Financial
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="currency" class="form-label">Currency Symbol</label>
+                        <select name="currency" id="currency" class="form-select">
+                            <option value="$" {% if settings.currency == '$' %}selected{% endif %}>$ (USD)</option>
+                            <option value="€" {% if settings.currency == '€' %}selected{% endif %}>€ (EUR)</option>
+                            <option value="£" {% if settings.currency == '£' %}selected{% endif %}>£ (GBP)</option>
+                            <option value="¥" {% if settings.currency == '¥' %}selected{% endif %}>¥ (JPY)</option>
+                            <option value="C$" {% if settings.currency == 'C$' %}selected{% endif %}>C$ (CAD)</option>
+                            <option value="A$" {% if settings.currency == 'A$' %}selected{% endif %}>A$ (AUD)</option>
+                            <option value="₹" {% if settings.currency == '₹' %}selected{% endif %}>₹ (INR)</option>
+                        </select>
+                        <div class="form-help">Default currency symbol for display</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date_format" class="form-label">Date Format</label>
+                        <select name="date_format" id="date_format" class="form-select">
+                            <option value="%Y-%m-%d" {% if settings.date_format == '%Y-%m-%d' %}selected{% endif %}>YYYY-MM-DD (2024-01-15)</option>
+                            <option value="%m/%d/%Y" {% if settings.date_format == '%m/%d/%Y' %}selected{% endif %}>MM/DD/YYYY (01/15/2024)</option>
+                            <option value="%d/%m/%Y" {% if settings.date_format == '%d/%m/%Y' %}selected{% endif %}>DD/MM/YYYY (15/01/2024)</option>
+                            <option value="%B %d, %Y" {% if settings.date_format == '%B %d, %Y' %}selected{% endif %}>Month DD, YYYY (January 15, 2024)</option>
+                        </select>
+                        <div class="form-help">How dates are displayed throughout the application</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="number_format" class="form-label">Number Format</label>
+                        <select name="number_format" id="number_format" class="form-select">
+                            <option value="en_US" {% if settings.number_format == 'en_US' %}selected{% endif %}>US (1,234.56)</option>
+                            <option value="en_GB" {% if settings.number_format == 'en_GB' %}selected{% endif %}>UK (1,234.56)</option>
+                            <option value="de_DE" {% if settings.number_format == 'de_DE' %}selected{% endif %}>German (1.234,56)</option>
+                            <option value="fr_FR" {% if settings.number_format == 'fr_FR' %}selected{% endif %}>French (1 234,56)</option>
+                        </select>
+                        <div class="form-help">Number formatting style</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="financial_period_start_day" class="form-label">Financial Period Start Day</label>
+                        <input type="number" name="financial_period_start_day" id="financial_period_start_day" 
+                               class="form-input" min="1" max="31" 
+                               value="{{ settings.financial_period_start_day }}">
+                        <div class="form-help">Day of the month when your financial period starts (1-31)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timezone" class="form-label">Timezone</label>
+                        <select name="timezone" id="timezone" class="form-select">
+                            <option value="UTC" {% if settings.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                            <option value="US/Eastern" {% if settings.timezone == 'US/Eastern' %}selected{% endif %}>US/Eastern</option>
+                            <option value="US/Central" {% if settings.timezone == 'US/Central' %}selected{% endif %}>US/Central</option>
+                            <option value="US/Mountain" {% if settings.timezone == 'US/Mountain' %}selected{% endif %}>US/Mountain</option>
+                            <option value="US/Pacific" {% if settings.timezone == 'US/Pacific' %}selected{% endif %}>US/Pacific</option>
+                            <option value="Europe/London" {% if settings.timezone == 'Europe/London' %}selected{% endif %}>Europe/London</option>
+                            <option value="Europe/Paris" {% if settings.timezone == 'Europe/Paris' %}selected{% endif %}>Europe/Paris</option>
+                            <option value="Europe/Berlin" {% if settings.timezone == 'Europe/Berlin' %}selected{% endif %}>Europe/Berlin</option>
+                            <option value="Asia/Tokyo" {% if settings.timezone == 'Asia/Tokyo' %}selected{% endif %}>Asia/Tokyo</option>
+                            <option value="Australia/Sydney" {% if settings.timezone == 'Australia/Sydney' %}selected{% endif %}>Australia/Sydney</option>
+                        </select>
+                        <div class="form-help">Your local timezone for date/time display</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Display Settings -->
+        <div class="card-group">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-list"></i>
+                    Display
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="transactions_per_page" class="form-label">Transactions per Page</label>
+                        <input type="number" name="transactions_per_page" id="transactions_per_page" 
+                               class="form-input" min="5" max="100" 
+                               value="{{ settings.transactions_per_page }}">
+                        <div class="form-help">Number of transactions shown per page (5-100)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stocks_per_page" class="form-label">Stocks per Page</label>
+                        <input type="number" name="stocks_per_page" id="stocks_per_page" 
+                               class="form-input" min="5" max="100" 
+                               value="{{ settings.stocks_per_page }}">
+                        <div class="form-help">Number of stocks shown per page (5-100)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation Settings -->
+        <div class="card-group">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-robot"></i>
+                    Automation
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="enable_notifications" 
+                                   {% if settings.enable_notifications %}checked{% endif %}>
+                            <span class="checkmark"></span>
+                            Enable Notifications
+                        </label>
+                        <div class="form-help">Receive system notifications for important events</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="auto_categorize" 
+                                   {% if settings.auto_categorize %}checked{% endif %}>
+                            <span class="checkmark"></span>
+                            Auto-categorize Transactions
+                        </label>
+                        <div class="form-help">Automatically categorize transactions based on patterns</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="backup_frequency" class="form-label">Backup Frequency</label>
+                        <select name="backup_frequency" id="backup_frequency" class="form-select">
+                            <option value="daily" {% if settings.backup_frequency == 'daily' %}selected{% endif %}>Daily</option>
+                            <option value="weekly" {% if settings.backup_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                            <option value="monthly" {% if settings.backup_frequency == 'monthly' %}selected{% endif %}>Monthly</option>
+                            <option value="never" {% if settings.backup_frequency == 'never' %}selected{% endif %}>Never</option>
+                        </select>
+                        <div class="form-help">How often to automatically backup your data</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                Save Settings
+            </button>
+            <a href="{{ url_for('settings.view_settings') }}" class="btn btn-outline">
+                <i class="fas fa-times"></i>
+                Cancel
+            </a>
+            <button type="button" id="preview-settings" class="btn btn-outline">
+                <i class="fas fa-eye"></i>
+                Preview Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Preview Modal -->
+<div id="preview-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Settings Preview</h3>
+            <button type="button" class="modal-close" onclick="closePreview()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="preview-content">
+                <!-- Preview content will be populated by JavaScript -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closePreview()">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-help {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 2rem 0;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.modal-close:hover {
+    color: var(--text-color);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.preview-section {
+    margin-bottom: 1.5rem;
+}
+
+.preview-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+
+.preview-label {
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.preview-value {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-container {
+        max-width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .modal-header {
+        padding: 1rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-footer {
+        padding: 1rem;
+    }
+
+    .preview-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('settings-form');
+    const previewBtn = document.getElementById('preview-settings');
+    const modal = document.getElementById('preview-modal');
+    const previewContent = document.getElementById('preview-content');
+
+    // Preview settings functionality
+    previewBtn.addEventListener('click', function() {
+        showPreview();
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+        }
+    });
+
+    function validateForm() {
+        let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.field-error').forEach(error => error.remove());
+        document.querySelectorAll('.field-invalid').forEach(field => field.classList.remove('field-invalid'));
+
+        // Validate financial period start day
+        const startDay = document.getElementById('financial_period_start_day');
+        const startDayValue = parseInt(startDay.value);
+        if (startDayValue < 1 || startDayValue > 31) {
+            showFieldError(startDay, 'Financial period start day must be between 1 and 31');
+            isValid = false;
+        }
+
+        // Validate transactions per page
+        const transactionsPerPage = document.getElementById('transactions_per_page');
+        const transactionsValue = parseInt(transactionsPerPage.value);
+        if (transactionsValue < 5 || transactionsValue > 100) {
+            showFieldError(transactionsPerPage, 'Transactions per page must be between 5 and 100');
+            isValid = false;
+        }
+
+        // Validate stocks per page
+        const stocksPerPage = document.getElementById('stocks_per_page');
+        const stocksValue = parseInt(stocksPerPage.value);
+        if (stocksValue < 5 || stocksValue > 100) {
+            showFieldError(stocksPerPage, 'Stocks per page must be between 5 and 100');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function showFieldError(field, message) {
+        field.classList.add('field-invalid');
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+        errorDiv.style.color = 'var(--danger-color)';
+        errorDiv.style.fontSize = '0.875rem';
+        errorDiv.style.marginTop = '0.25rem';
+
+        field.parentNode.appendChild(errorDiv);
+    }
+
+    function showPreview() {
+        const formData = new FormData(form);
+
+        // Build preview content
+        let previewHTML = '';
+
+        // Appearance section
+        previewHTML += '<div class="preview-section">';
+        previewHTML += '<h4>Appearance</h4>';
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Theme:</span>
+            <span class="preview-value">${formData.get('theme')}</span>
+        </div>`;
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Language:</span>
+            <span class="preview-value">${formData.get('language').toUpperCase()}</span>
+        </div>`;
+        previewHTML += '</div>';
+
+        // Financial section
+        previewHTML += '<div class="preview-section">';
+        previewHTML += '<h4>Financial</h4>';
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Currency:</span>
+            <span class="preview-value">${formData.get('currency')}</span>
+        </div>`;
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Date Format:</span>
+            <span class="preview-value">${formData.get('date_format')}</span>
+        </div>`;
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Number Format:</span>
+            <span class="preview-value">${formData.get('number_format')}</span>
+        </div>`;
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Financial Period Start:</span>
+            <span class="preview-value">Day ${formData.get('financial_period_start_day')}</span>
+        </div>`;
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Timezone:</span>
+            <span class="preview-value">${formData.get('timezone')}</span>
+        </div>`;
+        previewHTML += '</div>';
+
+        // Display section
+        previewHTML += '<div class="preview-section">';
+        previewHTML += '<h4>Display</h4>';
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Transactions per Page:</span>
+            <span class="preview-value">${formData.get('transactions_per_page')}</span>
+        </div>`;
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Stocks per Page:</span>
+            <span class="preview-value">${formData.get('stocks_per_page')}</span>
+        </div>`;
+        previewHTML += '</div>';
+
+        // Automation section
+        previewHTML += '<div class="preview-section">';
+        previewHTML += '<h4>Automation</h4>';
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Notifications:</span>
+            <span class="preview-value">${formData.get('enable_notifications') ? 'Enabled' : 'Disabled'}</span>
+        </div>`;
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Auto-categorize:</span>
+            <span class="preview-value">${formData.get('auto_categorize') ? 'Enabled' : 'Disabled'}</span>
+        </div>`;
+        previewHTML += `<div class="preview-item">
+            <span class="preview-label">Backup Frequency:</span>
+            <span class="preview-value">${formData.get('backup_frequency')}</span>
+        </div>`;
+        previewHTML += '</div>';
+
+        previewContent.innerHTML = previewHTML;
+        modal.style.display = 'flex';
+    }
+
+    // Theme preview functionality
+    const themeSelect = document.getElementById('theme');
+    themeSelect.addEventListener('change', function() {
+        // Apply theme preview to body
+        document.body.className = document.body.className.replace(/theme-\w+/, '') + ' theme-' + this.value;
+    });
+});
+
+function closePreview() {
+    document.getElementById('preview-modal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('preview-modal');
+    if (e.target === modal) {
+        closePreview();
+    }
+});
+</script>
+{% endblock %}

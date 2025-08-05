@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+
+{% block title %}About - Financial Tracker{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-info-circle"></i>
+        About Financial Tracker
+    </h1>
+    <div class="header-actions">
+        <a href="{{ url_for('settings.view_settings') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Settings
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Application Overview -->
+<div class="about-container">
+    <div class="card hero-card">
+        <div class="card-body">
+            <div class="app-hero">
+                <div class="app-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="app-info">
+                    <h2>Financial Tracker</h2>
+                    <p class="app-tagline">Your personal finance management solution</p>
+                    <div class="app-version">
+                        <span class="version-badge">Version 0.1.0</span>
+                        <span class="build-info">Beta Release</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-star"></i>
+                Features
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Account Management</h4>
+                        <p>Track multiple bank accounts, credit cards, and investment accounts in one place.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Transaction Tracking</h4>
+                        <p>Record and categorize all your financial transactions with detailed insights.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-area"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Portfolio Management</h4>
+                        <p>Track your stock investments with real-time price updates and performance analytics.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Financial Analytics</h4>
+                        <p>Visualize your spending patterns and investment performance with detailed reports.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Data Security</h4>
+                        <p>Your financial data is stored securely with industry-standard encryption.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Responsive Design</h4>
+                        <p>Access your financial data from any device with our mobile-friendly interface.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-code"></i>
+                Technology Stack
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="tech-grid">
+                <div class="tech-category">
+                    <h4>Backend</h4>
+                    <ul class="tech-list">
+                        <li><i class="fab fa-python"></i> Python 3.11+</li>
+                        <li><i class="fas fa-flask"></i> Flask Web Framework</li>
+                        <li><i class="fas fa-database"></i> SQLAlchemy ORM</li>
+                        <li><i class="fas fa-server"></i> SQLite Database</li>
+                    </ul>
+                </div>
+
+                <div class="tech-category">
+                    <h4>Frontend</h4>
+                    <ul class="tech-list">
+                        <li><i class="fab fa-html5"></i> HTML5</li>
+                        <li><i class="fab fa-css3-alt"></i> CSS3</li>
+                        <li><i class="fab fa-js"></i> JavaScript ES6+</li>
+                        <li><i class="fas fa-paint-brush"></i> Custom CSS Framework</li>
+                    </ul>
+                </div>
+
+                <div class="tech-category">
+                    <h4>Data Sources</h4>
+                    <ul class="tech-list">
+                        <li><i class="fas fa-chart-line"></i> Yahoo Finance API</li>
+                        <li><i class="fas fa-globe"></i> Financial Data APIs</li>
+                        <li><i class="fas fa-file-csv"></i> CSV Import/Export</li>
+                        <li><i class="fas fa-sync"></i> Real-time Price Updates</li>
+                    </ul>
+                </div>
+
+                <div class="tech-category">
+                    <h4>Development</h4>
+                    <ul class="tech-list">
+                        <li><i class="fab fa-git-alt"></i> Git Version Control</li>
+                        <li><i class="fas fa-vial"></i> Unit Testing</li>
+                        <li><i class="fas fa-bug"></i> Error Logging</li>
+                        <li><i class="fas fa-cogs"></i> Configuration Management</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- License and Credits -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-balance-scale"></i>
+                License & Credits
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="license-info">
+                <div class="license-section">
+                    <h4>Open Source</h4>
+                    <p>Financial Tracker is built with open-source technologies and follows best practices for security and maintainability.</p>
+                </div>
+
+                <div class="license-section">
+                    <h4>Third-Party Libraries</h4>
+                    <ul class="credits-list">
+                        <li>Flask - Web framework for Python</li>
+                        <li>SQLAlchemy - Python SQL toolkit and ORM</li>
+                        <li>yfinance - Yahoo Finance market data downloader</li>
+                        <li>Font Awesome - Icon library</li>
+                    </ul>
+                </div>
+
+                <div class="license-section">
+                    <h4>Data Sources</h4>
+                    <p>Stock market data provided by Yahoo Finance. Real-time quotes may be delayed. The application is for informational purposes only and should not be considered as financial advice.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support and Contact -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-life-ring"></i>
+                Support & Contact
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="support-info">
+                <div class="support-section">
+                    <h4>Getting Help</h4>
+                    <p>If you encounter any issues or have questions about using Financial Tracker, please check the documentation or contact support.</p>
+                </div>
+
+                <div class="support-section">
+                    <h4>Feature Requests</h4>
+                    <p>We're always looking to improve Financial Tracker. If you have ideas for new features or improvements, we'd love to hear from you.</p>
+                </div>
+
+                <div class="support-section">
+                    <h4>Privacy & Security</h4>
+                    <p>Your financial data privacy and security are our top priorities. All data is stored locally and encrypted. We never share your personal financial information.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-info"></i>
+                System Information
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="system-info">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Application Version:</span>
+                        <span class="info-value">0.1.0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Database:</span>
+                        <span class="info-value">SQLite</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Python Version:</span>
+                        <span class="info-value">3.11+</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Framework:</span>
+                        <span class="info-value">Flask</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.about-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.hero-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    border: none;
+}
+
+.app-hero {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    text-align: center;
+}
+
+.app-icon {
+    font-size: 4rem;
+    opacity: 0.9;
+}
+
+.app-info h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.app-tagline {
+    font-size: 1.25rem;
+    margin: 0 0 1rem 0;
+    opacity: 0.9;
+}
+
+.app-version {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.version-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.build-info {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.feature-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.feature-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    width: 3rem;
+    text-align: center;
+}
+
+.feature-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+    font-size: 1.125rem;
+}
+
+.feature-content p {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.tech-category h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.125rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+.tech-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tech-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.tech-list i {
+    width: 1.5rem;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.license-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.license-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.125rem;
+}
+
+.license-section p {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.credits-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.credits-list li {
+    color: var(--text-muted);
+    padding-left: 1rem;
+    position: relative;
+}
+
+.credits-list li::before {
+    content: "•";
+    color: var(--primary-color);
+    position: absolute;
+    left: 0;
+}
+
+.support-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.support-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.125rem;
+}
+
+.support-section p {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.system-info {
+    background-color: var(--card-header-bg);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.info-value {
+    font-weight: 600;
+    color: var(--text-color);
+    font-family: monospace;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .about-container {
+        max-width: 100%;
+    }
+
+    .app-hero {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .app-info h2 {
+        font-size: 2rem;
+    }
+
+    .app-version {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .tech-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-icon {
+        font-size: 3rem;
+    }
+
+    .app-info h2 {
+        font-size: 1.75rem;
+    }
+
+    .app-tagline {
+        font-size: 1rem;
+    }
+
+    .feature-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .feature-icon {
+        align-self: center;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
