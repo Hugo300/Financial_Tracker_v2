@@ -185,6 +185,7 @@
 }
 
 .table td.number-cell,
+.table td.percentage-cell,
 .table td.amount-cell,
 .table td.balance-cell {
     width: 120px;
