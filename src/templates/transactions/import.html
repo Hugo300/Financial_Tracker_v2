@@ -1,0 +1,713 @@
+{% extends "base.html" %}
+
+{% block title %}Import Transactions - Financial Tracker{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-upload"></i>
+        Import Transactions
+    </h1>
+    <div class="header-actions">
+        <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Transactions
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="import-container">
+    <!-- Import Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-file-csv"></i>
+                Upload CSV File
+            </h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" id="import-form">
+                <div class="form-grid">
+                    <!-- Account Selection -->
+                    <div class="form-group">
+                        <label for="account_id" class="form-label">
+                            Target Account <span class="required">*</span>
+                        </label>
+                        <select name="account_id" id="account_id" class="form-select" required>
+                            <option value="">Select an account...</option>
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}">
+                                    {{ account.name }}
+                                    {% if account.institution %}({{ account.institution }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">
+                            All imported transactions will be added to this account
+                        </div>
+                        {% if not accounts %}
+                            <div class="form-help error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                No accounts found. 
+                                <a href="{{ url_for('accounts.create_account') }}">Create one first</a>.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- CSV File Upload -->
+                    <div class="form-group">
+                        <label for="csv_file" class="form-label">
+                            CSV File <span class="required">*</span>
+                        </label>
+                        <div class="file-upload-area" id="file-upload-area">
+                            <input type="file" name="csv_file" id="csv_file" class="file-input" 
+                                   accept=".csv" required>
+                            <div class="file-upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p class="upload-text">
+                                    <strong>Click to select a CSV file</strong> or drag and drop
+                                </p>
+                                <p class="upload-hint">
+                                    Maximum file size: 10MB
+                                </p>
+                            </div>
+                        </div>
+                        <div class="form-help">
+                            Upload a CSV file containing your transaction data
+                        </div>
+                    </div>
+
+                    <!-- Skip Header Option -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="skip_header" checked>
+                            <span class="checkmark"></span>
+                            Skip first row (header)
+                        </label>
+                        <div class="form-help">
+                            Check this if your CSV file has column headers in the first row
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" {% if not accounts %}disabled{% endif %}>
+                        <i class="fas fa-upload"></i>
+                        Import Transactions
+                    </button>
+                    <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CSV Format Guide -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                CSV Format Requirements
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="format-guide">
+                <div class="format-section">
+                    <h4>Required Columns</h4>
+                    <p>Your CSV file must contain the following columns in this exact order:</p>
+                    <ol class="format-list">
+                        <li><strong>Date</strong> - Transaction date (YYYY-MM-DD, MM/DD/YYYY, or DD/MM/YYYY)</li>
+                        <li><strong>Description</strong> - Transaction description</li>
+                        <li><strong>Amount</strong> - Transaction amount (positive number)</li>
+                        <li><strong>Type</strong> - Transaction type (income, expense, or transfer)</li>
+                    </ol>
+                </div>
+
+                <div class="format-section">
+                    <h4>Optional Columns</h4>
+                    <p>You can also include these optional columns:</p>
+                    <ul class="format-list">
+                        <li><strong>Payee</strong> - Who you paid or received money from</li>
+                        <li><strong>Category</strong> - Transaction category</li>
+                        <li><strong>Notes</strong> - Additional notes</li>
+                    </ul>
+                </div>
+
+                <div class="format-section">
+                    <h4>Example CSV Format</h4>
+                    <div class="csv-example">
+                        <pre>Date,Description,Amount,Type,Payee,Category,Notes
+2024-01-15,Grocery Shopping,85.50,expense,Walmart,groceries,Weekly shopping
+2024-01-16,Salary Payment,3500.00,income,ABC Company,salary,Monthly salary
+2024-01-17,Gas Station,45.20,expense,Shell,transportation,</pre>
+                    </div>
+                </div>
+
+                <div class="format-section">
+                    <h4>Important Notes</h4>
+                    <ul class="format-list">
+                        <li>All amounts should be positive numbers (the type determines if it's income or expense)</li>
+                        <li>Dates can be in various formats, but YYYY-MM-DD is recommended</li>
+                        <li>Transaction types must be: income, expense, or transfer</li>
+                        <li>Categories should match existing categories or will be set to "other"</li>
+                        <li>Empty cells are allowed for optional columns</li>
+                        <li>File size limit is 10MB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sample CSV Download -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-download"></i>
+                Sample Files
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="sample-files">
+                <div class="sample-item">
+                    <div class="sample-icon">
+                        <i class="fas fa-file-csv"></i>
+                    </div>
+                    <div class="sample-content">
+                        <h4>Sample CSV Template</h4>
+                        <p>Download a template CSV file with the correct format and sample data.</p>
+                        <a href="#" class="btn btn-outline" id="download-sample">
+                            <i class="fas fa-download"></i>
+                            Download Template
+                        </a>
+                    </div>
+                </div>
+
+                <div class="sample-item">
+                    <div class="sample-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <div class="sample-content">
+                        <h4>Export Current Data</h4>
+                        <p>Export your existing transactions to see the expected format.</p>
+                        <a href="{{ url_for('transactions.export_csv') }}" class="btn btn-outline">
+                            <i class="fas fa-download"></i>
+                            Export Transactions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Tips -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-lightbulb"></i>
+                Import Tips
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="tips-list">
+                <div class="tip-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Prepare your data:</strong> Clean up your CSV file before importing to avoid errors</span>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Test with small files:</strong> Try importing a few transactions first to verify the format</span>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Backup first:</strong> Export your current data before importing new transactions</span>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Check duplicates:</strong> Review imported transactions to avoid duplicates</span>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Verify balances:</strong> Check account balances after import to ensure accuracy</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.import-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    gap: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.required {
+    color: var(--danger-color);
+}
+
+.form-help {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.form-help.error {
+    color: var(--danger-color);
+}
+
+.form-help a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.form-help a:hover {
+    text-decoration: underline;
+}
+
+.file-upload-area {
+    position: relative;
+    border: 2px dashed var(--border-color);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+    background-color: var(--card-header-bg);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-bg);
+}
+
+.file-upload-area.dragover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-bg);
+    transform: scale(1.02);
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-upload-content i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.upload-text {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+}
+
+.upload-hint {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.format-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.format-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.125rem;
+}
+
+.format-section p {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.format-list {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.format-list li {
+    margin-bottom: 0.5rem;
+}
+
+.csv-example {
+    background-color: var(--card-header-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.csv-example pre {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    white-space: pre;
+}
+
+.sample-files {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.sample-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background-color: var(--card-header-bg);
+}
+
+.sample-icon {
+    width: 3rem;
+    height: 3rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.sample-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.sample-content p {
+    margin: 0 0 1rem 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--success-bg);
+    color: var(--success-color);
+    border-radius: 0.5rem;
+    border: 1px solid var(--success-border);
+}
+
+.tip-item i {
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+}
+
+/* File selected state */
+.file-selected .file-upload-content {
+    color: var(--success-color);
+}
+
+.file-selected .file-upload-area {
+    border-color: var(--success-color);
+    background-color: var(--success-bg);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .import-container {
+        max-width: 100%;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sample-files {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .sample-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .sample-icon {
+        align-self: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .file-upload-area {
+        padding: 1.5rem 1rem;
+    }
+
+    .file-upload-content i {
+        font-size: 2rem;
+    }
+
+    .tip-item {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const fileInput = document.getElementById('csv_file');
+    const uploadText = document.querySelector('.upload-text');
+    const downloadSampleBtn = document.getElementById('download-sample');
+
+    // File upload drag and drop functionality
+    fileUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    fileUploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+
+    fileUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                fileInput.files = files;
+                updateFileDisplay(file);
+            } else {
+                alert('Please select a CSV file.');
+            }
+        }
+    });
+
+    // File input change handler
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            updateFileDisplay(this.files[0]);
+        } else {
+            resetFileDisplay();
+        }
+    });
+
+    // Update file display when file is selected
+    function updateFileDisplay(file) {
+        const fileSize = (file.size / 1024 / 1024).toFixed(2); // Size in MB
+        uploadText.innerHTML = `
+            <strong>Selected: ${file.name}</strong><br>
+            <span style="font-size: 0.875rem; color: var(--text-muted);">
+                Size: ${fileSize} MB
+            </span>
+        `;
+        fileUploadArea.classList.add('file-selected');
+
+        // Validate file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size exceeds 10MB limit. Please select a smaller file.');
+            resetFileDisplay();
+            fileInput.value = '';
+        }
+    }
+
+    // Reset file display
+    function resetFileDisplay() {
+        uploadText.innerHTML = `
+            <strong>Click to select a CSV file</strong> or drag and drop
+        `;
+        fileUploadArea.classList.remove('file-selected');
+    }
+
+    // Generate and download sample CSV
+    downloadSampleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const sampleData = [
+            ['Date', 'Description', 'Amount', 'Type', 'Payee', 'Category', 'Notes'],
+            ['2024-01-15', 'Grocery Shopping', '85.50', 'expense', 'Walmart', 'groceries', 'Weekly shopping'],
+            ['2024-01-16', 'Salary Payment', '3500.00', 'income', 'ABC Company', 'salary', 'Monthly salary'],
+            ['2024-01-17', 'Gas Station', '45.20', 'expense', 'Shell', 'transportation', ''],
+            ['2024-01-18', 'Coffee Shop', '12.75', 'expense', 'Starbucks', 'dining', 'Morning coffee'],
+            ['2024-01-19', 'Transfer to Savings', '500.00', 'transfer', '', '', 'Monthly savings transfer']
+        ];
+
+        // Convert to CSV format
+        const csvContent = sampleData.map(row =>
+            row.map(field => `"${field}"`).join(',')
+        ).join('\n');
+
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'transaction_template.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    });
+
+    // Form validation
+    const form = document.getElementById('import-form');
+    form.addEventListener('submit', function(e) {
+        const accountId = document.getElementById('account_id').value;
+        const csvFile = fileInput.files[0];
+
+        if (!accountId) {
+            alert('Please select an account.');
+            e.preventDefault();
+            return;
+        }
+
+        if (!csvFile) {
+            alert('Please select a CSV file to import.');
+            e.preventDefault();
+            return;
+        }
+
+        if (!csvFile.name.endsWith('.csv')) {
+            alert('Please select a valid CSV file.');
+            e.preventDefault();
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+        submitBtn.disabled = true;
+
+        // Re-enable button after a delay in case of errors
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 30000); // 30 seconds timeout
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Escape to clear file selection
+        if (e.key === 'Escape' && fileInput.files.length > 0) {
+            fileInput.value = '';
+            resetFileDisplay();
+        }
+    });
+
+    // Auto-focus account selection if no accounts
+    const accountSelect = document.getElementById('account_id');
+    if (accountSelect.options.length <= 1) {
+        // No accounts available, show helpful message
+        const helpMessage = document.createElement('div');
+        helpMessage.className = 'alert alert-warning';
+        helpMessage.innerHTML = `
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>No accounts found!</strong>
+            You need to create at least one account before importing transactions.
+            <a href="{{ url_for('accounts.create_account') }}" class="btn btn-sm btn-primary" style="margin-left: 1rem;">
+                Create Account
+            </a>
+        `;
+
+        const container = document.querySelector('.import-container');
+        container.insertBefore(helpMessage, container.firstChild);
+    }
+});
+</script>
+{% endblock %}

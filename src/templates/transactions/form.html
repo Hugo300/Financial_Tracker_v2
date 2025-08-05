@@ -1,0 +1,655 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if transaction %}
+        Edit Transaction - Financial Tracker
+    {% else %}
+        Add Transaction - Financial Tracker
+    {% endif %}
+{% endblock %}
+
+{% block header %}
+<div class="page-header">
+    <h1>
+        <i class="fas fa-exchange-alt"></i>
+        {% if transaction %}
+            Edit Transaction
+        {% else %}
+            Add Transaction
+        {% endif %}
+    </h1>
+    <div class="header-actions">
+        <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Back to Transactions
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <h3>Transaction Details</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="transaction-form">
+                <div class="form-grid">
+                    <!-- Account Selection -->
+                    <div class="form-group">
+                        <label for="account_id" class="form-label">
+                            Account <span class="required">*</span>
+                        </label>
+                        <select name="account_id" id="account_id" class="form-select" required>
+                            <option value="">Select an account...</option>
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}" 
+                                    {% if transaction and transaction.account_id == account.id %}selected{% endif %}
+                                    {% if request.args.get('account_id') == account.id|string %}selected{% endif %}>
+                                    {{ account.name }}
+                                    {% if account.institution %}({{ account.institution }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if not accounts %}
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                No accounts found. 
+                                <a href="{{ url_for('accounts.create_account') }}">Create one first</a>.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Transaction Type -->
+                    <div class="form-group">
+                        <label for="transaction_type" class="form-label">
+                            Transaction Type <span class="required">*</span>
+                        </label>
+                        <select name="transaction_type" id="transaction_type" class="form-select" required>
+                            <option value="">Select type...</option>
+                            {% for type in transaction_types %}
+                                <option value="{{ type.value }}" 
+                                    {% if transaction and transaction.transaction_type == type %}selected{% endif %}>
+                                    {{ type.value.title() }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Transaction Date -->
+                    <div class="form-group">
+                        <label for="date" class="form-label">
+                            Transaction Date <span class="required">*</span>
+                        </label>
+                        <input type="date" name="date" id="date" class="form-input" required
+                               value="{% if transaction %}{{ transaction.date.strftime('%Y-%m-%d') }}{% endif %}">
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="form-group">
+                        <label for="amount" class="form-label">
+                            Amount <span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-prefix">{{ settings.currency }}</span>
+                            <input type="number" name="amount" id="amount" class="form-input" 
+                                   step="0.01" min="0.01" required
+                                   value="{% if transaction %}{{ transaction.amount }}{% endif %}"
+                                   placeholder="0.00" data-currency>
+                        </div>
+                        <div class="form-help">
+                            Enter the transaction amount (always positive)
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description" class="form-label">
+                            Description <span class="required">*</span>
+                        </label>
+                        <input type="text" name="description" id="description" class="form-input" required
+                               value="{% if transaction %}{{ transaction.description }}{% endif %}"
+                               placeholder="e.g., Grocery shopping, Salary payment">
+                        <div class="form-help">
+                            Brief description of the transaction
+                        </div>
+                    </div>
+
+                    <!-- Payee -->
+                    <div class="form-group">
+                        <label for="payee" class="form-label">Payee</label>
+                        <input type="text" name="payee" id="payee" class="form-input"
+                               value="{% if transaction %}{{ transaction.payee }}{% endif %}"
+                               placeholder="e.g., Walmart, John Doe, ABC Company">
+                        <div class="form-help">
+                            Who you paid or received money from
+                        </div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label for="category" class="form-label">Category</label>
+                        <select name="category" id="category" class="form-select">
+                            <option value="">Select category...</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.value }}" 
+                                    {% if transaction and transaction.category == cat %}selected{% endif %}>
+                                    {{ cat.value.replace('_', ' ').title() }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">
+                            Optional categorization for reporting
+                        </div>
+                    </div>
+
+                    <!-- Transfer To Account (for transfers) -->
+                    <div class="form-group" id="transfer-account-group" style="display: none;">
+                        <label for="transfer_account_id" class="form-label">
+                            Transfer To Account <span class="required">*</span>
+                        </label>
+                        <select name="transfer_account_id" id="transfer_account_id" class="form-select">
+                            <option value="">Select destination account...</option>
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}" 
+                                    {% if transaction and transaction.transfer_account_id == account.id %}selected{% endif %}>
+                                    {{ account.name }}
+                                    {% if account.institution %}({{ account.institution }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">
+                            Account to transfer money to
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="notes" class="form-label">Notes</label>
+                    <textarea name="notes" id="notes" class="form-textarea" rows="3" 
+                              placeholder="Optional additional notes about this transaction...">{% if transaction %}{{ transaction.notes }}{% endif %}</textarea>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if transaction %}Update Transaction{% else %}Save Transaction{% endif %}
+                    </button>
+                    <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    {% if transaction %}
+                        <button type="button" class="btn btn-danger" id="delete-transaction">
+                            <i class="fas fa-trash"></i>
+                            Delete Transaction
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transaction Preview -->
+    <div class="card" id="transaction-preview" style="display: none;">
+        <div class="card-header">
+            <h3>Transaction Preview</h3>
+        </div>
+        <div class="card-body">
+            <div class="preview-content">
+                <div class="preview-row">
+                    <span class="preview-label">Type:</span>
+                    <span id="preview-type" class="preview-value"></span>
+                </div>
+                <div class="preview-row">
+                    <span class="preview-label">Account:</span>
+                    <span id="preview-account" class="preview-value"></span>
+                </div>
+                <div class="preview-row">
+                    <span class="preview-label">Amount:</span>
+                    <span id="preview-amount" class="preview-value"></span>
+                </div>
+                <div class="preview-row">
+                    <span class="preview-label">Description:</span>
+                    <span id="preview-description" class="preview-value"></span>
+                </div>
+                <div class="preview-row" id="preview-payee-row" style="display: none;">
+                    <span class="preview-label">Payee:</span>
+                    <span id="preview-payee" class="preview-value"></span>
+                </div>
+                <div class="preview-row" id="preview-category-row" style="display: none;">
+                    <span class="preview-label">Category:</span>
+                    <span id="preview-category" class="preview-value"></span>
+                </div>
+                <div class="preview-row" id="preview-transfer-row" style="display: none;">
+                    <span class="preview-label">Transfer To:</span>
+                    <span id="preview-transfer" class="preview-value"></span>
+                </div>
+                <div class="preview-row">
+                    <span class="preview-label">Date:</span>
+                    <span id="preview-date" class="preview-value"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-lightbulb"></i>
+                Quick Tips
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="tips-list">
+                <div class="tip-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span><strong>Income:</strong> Money coming into your account (salary, refunds, etc.)</span>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span><strong>Expense:</strong> Money going out of your account (purchases, bills, etc.)</span>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span><strong>Transfer:</strong> Moving money between your own accounts</span>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-keyboard"></i>
+                    <span><strong>Keyboard shortcut:</strong> Press Ctrl+S (Cmd+S on Mac) to save</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    gap: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.required {
+    color: var(--danger-color);
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    z-index: 1;
+}
+
+.input-group .form-input {
+    padding-left: 2rem;
+}
+
+.form-help {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.form-help a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.form-help a:hover {
+    text-decoration: underline;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.preview-row:last-child {
+    border-bottom: none;
+}
+
+.preview-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.preview-value {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--info-bg);
+    color: var(--info-color);
+    border-radius: 0.5rem;
+    border: 1px solid var(--info-border);
+}
+
+.tip-item i {
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+}
+
+.field-error {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.field-invalid {
+    border-color: var(--danger-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-container {
+        max-width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-actions {
+        flex-direction: column;
+    }
+
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .preview-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .tip-item {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('transaction-form');
+    const accountSelect = document.getElementById('account_id');
+    const typeSelect = document.getElementById('transaction_type');
+    const dateInput = document.getElementById('date');
+    const amountInput = document.getElementById('amount');
+    const descriptionInput = document.getElementById('description');
+    const payeeInput = document.getElementById('payee');
+    const categorySelect = document.getElementById('category');
+    const transferAccountGroup = document.getElementById('transfer-account-group');
+    const transferAccountSelect = document.getElementById('transfer_account_id');
+    const notesTextarea = document.getElementById('notes');
+    const deleteBtn = document.getElementById('delete-transaction');
+    const preview = document.getElementById('transaction-preview');
+
+    // Currency symbol from settings
+    const currencySymbol = '{{ settings.currency }}';
+
+    // Set default date to today if no transaction
+    if (dateInput && !dateInput.value) {
+        const today = new Date();
+        const formattedDate = today.getFullYear() + '-' +
+            String(today.getMonth() + 1).padStart(2, '0') + '-' +
+            String(today.getDate()).padStart(2, '0');
+        dateInput.value = formattedDate;
+    }
+
+    // Show/hide transfer account field based on transaction type
+    typeSelect.addEventListener('change', function() {
+        if (this.value === 'transfer') {
+            transferAccountGroup.style.display = 'block';
+            transferAccountSelect.required = true;
+        } else {
+            transferAccountGroup.style.display = 'none';
+            transferAccountSelect.required = false;
+            transferAccountSelect.value = '';
+        }
+        updatePreview();
+    });
+
+    // Update preview when form fields change
+    [accountSelect, typeSelect, dateInput, amountInput, descriptionInput, payeeInput, categorySelect, transferAccountSelect, notesTextarea].forEach(input => {
+        if (input) {
+            input.addEventListener('input', updatePreview);
+            input.addEventListener('change', updatePreview);
+        }
+    });
+
+    // Update preview
+    function updatePreview() {
+        const accountOption = accountSelect.options[accountSelect.selectedIndex];
+        const typeOption = typeSelect.options[typeSelect.selectedIndex];
+        const categoryOption = categorySelect.options[categorySelect.selectedIndex];
+        const transferOption = transferAccountSelect.options[transferAccountSelect.selectedIndex];
+
+        const type = typeSelect.value;
+        const account = accountOption && accountOption.value ? accountOption.text : '';
+        const amount = parseFloat(amountInput.value) || 0;
+        const description = descriptionInput.value.trim();
+        const payee = payeeInput.value.trim();
+        const category = categoryOption && categoryOption.value ? categoryOption.text : '';
+        const transferAccount = transferOption && transferOption.value ? transferOption.text : '';
+        const date = dateInput.value;
+
+        if (type && account && amount > 0 && description) {
+            // Update preview elements
+            document.getElementById('preview-type').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+            document.getElementById('preview-account').textContent = account;
+            document.getElementById('preview-amount').textContent = currencySymbol + amount.toFixed(2);
+            document.getElementById('preview-description').textContent = description;
+
+            // Show/hide optional fields
+            const payeeRow = document.getElementById('preview-payee-row');
+            if (payee) {
+                document.getElementById('preview-payee').textContent = payee;
+                payeeRow.style.display = 'flex';
+            } else {
+                payeeRow.style.display = 'none';
+            }
+
+            const categoryRow = document.getElementById('preview-category-row');
+            if (category) {
+                document.getElementById('preview-category').textContent = category;
+                categoryRow.style.display = 'flex';
+            } else {
+                categoryRow.style.display = 'none';
+            }
+
+            const transferRow = document.getElementById('preview-transfer-row');
+            if (type === 'transfer' && transferAccount) {
+                document.getElementById('preview-transfer').textContent = transferAccount;
+                transferRow.style.display = 'flex';
+            } else {
+                transferRow.style.display = 'none';
+            }
+
+            if (date) {
+                const dateObj = new Date(date);
+                document.getElementById('preview-date').textContent = dateObj.toLocaleDateString();
+            }
+
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.field-error').forEach(error => error.remove());
+        document.querySelectorAll('.field-invalid').forEach(field => field.classList.remove('field-invalid'));
+
+        // Validate required fields
+        const requiredFields = [
+            { field: accountSelect, message: 'Please select an account' },
+            { field: typeSelect, message: 'Please select a transaction type' },
+            { field: dateInput, message: 'Please enter a transaction date' },
+            { field: amountInput, message: 'Please enter an amount' },
+            { field: descriptionInput, message: 'Please enter a description' }
+        ];
+
+        requiredFields.forEach(({ field, message }) => {
+            if (!field.value.trim()) {
+                showFieldError(field, message);
+                isValid = false;
+            }
+        });
+
+        // Validate transfer account if transfer type
+        if (typeSelect.value === 'transfer' && !transferAccountSelect.value) {
+            showFieldError(transferAccountSelect, 'Please select a destination account for the transfer');
+            isValid = false;
+        }
+
+        // Validate amount
+        const amount = parseFloat(amountInput.value);
+        if (amount <= 0) {
+            showFieldError(amountInput, 'Amount must be greater than 0');
+            isValid = false;
+        }
+
+        // Validate transfer accounts are different
+        if (typeSelect.value === 'transfer' && accountSelect.value === transferAccountSelect.value) {
+            showFieldError(transferAccountSelect, 'Transfer destination must be different from source account');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
+    // Helper function to show field errors
+    function showFieldError(field, message) {
+        field.classList.add('field-invalid');
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+
+        field.parentNode.appendChild(errorDiv);
+    }
+
+    // Delete transaction handler
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            const description = descriptionInput.value.trim() || 'this transaction';
+            if (confirm(`Are you sure you want to delete "${description}"? This action cannot be undone.`)) {
+                // Create a form to submit the delete request
+                const deleteForm = document.createElement('form');
+                deleteForm.method = 'POST';
+                deleteForm.action = '{{ url_for("transactions.delete_transaction", transaction_id=transaction.id) if transaction else "#" }}';
+
+                document.body.appendChild(deleteForm);
+                deleteForm.submit();
+            }
+        });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + S to save
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            form.submit();
+        }
+    });
+
+    // Initialize preview and transfer field visibility
+    updatePreview();
+    typeSelect.dispatchEvent(new Event('change'));
+});
+</script>
+{% endblock %}
