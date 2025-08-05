@@ -99,7 +99,7 @@
 </div>
 
 <!-- Holdings Table -->
-<div class="card">
+<div class="card-group">
     <div class="card-header">
         <h3>Current Holdings</h3>
         <div class="card-actions">
@@ -109,48 +109,47 @@
     <div class="card-body">
         {% if portfolio_summary.holdings %}
             <div class="table-responsive">
-                <table class="table" data-sortable>
+                <table class="table" data-sortable id="portfolio-table">
                     <thead>
                         <tr>
-                            <th data-sort="string">Symbol</th>
-                            <th data-sort="string">Company</th>
-                            <th data-sort="number">Shares</th>
-                            <th data-sort="number">Avg Cost</th>
-                            <th data-sort="number">Current Price</th>
-                            <th data-sort="number">Market Value</th>
-                            <th data-sort="number">Gain/Loss</th>
-                            <th data-sort="number">%</th>
-                            <th data-sort="date">Last Updated</th>
+                            <th class="sortable">Symbol</th>
+                            <th class="sortable">Company</th>
+                            <th class="sortable">Shares</th>
+                            <th class="sortable">Avg Cost</th>
+                            <th class="sortable">Current Price</th>
+                            <th class="sortable">Market Value</th>
+                            <th class="sortable">Gain/Loss</th>
+                            <th class="sortable">%</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for holding in portfolio_summary.holdings %}
                             <tr>
-                                <td>
+                                <td class="symbol-cell">
                                     <a href="{{ url_for('stocks.view_stock', stock_id=holding.stock_id) }}" class="stock-symbol">
                                         {{ holding.symbol }}
                                     </a>
                                 </td>
-                                <td class="company-name">{{ holding.name }}</td>
-                                <td class="text-right">{{ holding.shares|number }}</td>
-                                <td class="text-right">{{ holding.average_cost|currency(settings.currency) }}</td>
-                                <td class="text-right">
+                                <td class="company-cell">{{ holding.name }}</td>
+                                <td class="shares-cell">{{ holding.shares|number }}</td>
+                                <td class="number-cell">{{ holding.average_cost|currency(settings.currency) }}</td>
+                                <td class="number-cell">
                                     {% if holding.current_price %}
                                         {{ holding.current_price|currency(settings.currency) }}
                                     {% else %}
                                         <span class="text-muted">N/A</span>
                                     {% endif %}
                                 </td>
-                                <td class="text-right">{{ holding.current_value|currency(settings.currency) }}</td>
-                                <td class="text-right {% if holding.gain_loss >= 0 %}positive{% else %}negative{% endif %}">
+                                <td class="number-cell">{{ holding.current_value|currency(settings.currency) }}</td>
+                                <td class="number-cell {% if holding.gain_loss >= 0 %}positive{% else %}negative{% endif %}">
                                     {% if holding.gain_loss >= 0 %}
                                         +{{ holding.gain_loss|currency(settings.currency) }}
                                     {% else %}
                                         {{ holding.gain_loss|currency(settings.currency) }}
                                     {% endif %}
                                 </td>
-                                <td class="text-right {% if holding.gain_loss_percentage >= 0 %}positive{% else %}negative{% endif %}">
+                                <td class="number-cell {% if holding.gain_loss_percentage >= 0 %}pos    itive{% else %}negative{% endif %}">
                                     {% if holding.gain_loss_percentage >= 0 %}
                                         <i class="fas fa-arrow-up"></i>
                                         +{{ holding.gain_loss_percentage|percentage }}%
@@ -159,20 +158,13 @@
                                         {{ holding.gain_loss_percentage|percentage }}%
                                     {% endif %}
                                 </td>
-                                <td class="text-muted">
-                                    {% if holding.last_updated %}
-                                        {{ holding.last_updated.strftime('%m/%d %H:%M') }}
-                                    {% else %}
-                                        Never
-                                    {% endif %}
-                                </td>
-                                <td>
+                                <td class="actions-cell">
                                     <div class="action-buttons">
-                                        <a href="{{ url_for('stocks.view_stock', stock_id=holding.stock_id) }}" 
+                                        <a href="{{ url_for('stocks.view_stock', stock_id=holding.stock_id) }}"
                                            class="btn btn-sm btn-outline" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ url_for('stocks.create_stock_transaction') }}?stock_id={{ holding.stock_id }}" 
+                                        <a href="{{ url_for('stocks.create_stock_transaction') }}?stock_id={{ holding.stock_id }}"
                                            class="btn btn-sm btn-primary" title="Buy/Sell">
                                             <i class="fas fa-exchange-alt"></i>
                                         </a>
@@ -204,7 +196,7 @@
 </div>
 
 <!-- Recent Transactions -->
-<div class="card">
+<div class="card-group">
     <div class="card-header">
         <h3>Recent Stock Transactions</h3>
         <div class="card-actions">
@@ -219,33 +211,33 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Symbol</th>
-                            <th>Type</th>
-                            <th>Shares</th>
-                            <th>Price</th>
-                            <th>Total</th>
-                            <th>Fees</th>
+                            <th class="sortable">Date</th>
+                            <th class="sortable">Symbol</th>
+                            <th class="sortable">Type</th>
+                            <th class="sortable">Shares</th>
+                            <th class="sortable">Price</th>
+                            <th class="sortable">Total</th>
+                            <th class="sortable">Fees</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for transaction in recent_transactions %}
                             <tr>
-                                <td>{{ transaction.date.strftime('%m/%d/%Y') }}</td>
-                                <td>
+                                <td class="date-cell">{{ transaction.date.strftime('%m/%d/%Y') }}</td>
+                                <td class="symbol-cell">
                                     <a href="{{ url_for('stocks.view_stock', stock_id=transaction.stock_id) }}">
                                         {{ transaction.stock.symbol }}
                                     </a>
                                 </td>
-                                <td>
+                                <td class="type-cell">
                                     <span class="transaction-type transaction-type-{{ transaction.transaction_type.value }}">
                                         {{ transaction.transaction_type.value.title() }}
                                     </span>
                                 </td>
-                                <td class="text-right">{{ transaction.shares|number }}</td>
-                                <td class="text-right">{{ transaction.price_per_share|currency(settings.currency) }}</td>
-                                <td class="text-right">{{ transaction.total_amount|currency(settings.currency) }}</td>
-                                <td class="text-right">
+                                <td class="shares-cell">{{ transaction.shares|number }}</td>
+                                <td class="number-cell">{{ transaction.price_per_share|currency(settings.currency) }}</td>
+                                <td class="number-cell">{{ transaction.total_amount|currency(settings.currency) }}</td>
+                                <td class="number-cell">
                                     {% if transaction.fees > 0 %}
                                         {{ transaction.fees|currency(settings.currency) }}
                                     {% else %}
