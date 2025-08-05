@@ -154,7 +154,7 @@ def add_stock():
         )
 
 
-@stocks_bp.route('/<int:stock_id>')
+@stocks_bp.route('/view/stock_id=<int:stock_id>')
 def view_stock(stock_id):
     """
     View stock details and holdings.
