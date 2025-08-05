@@ -8,7 +8,7 @@ and account-specific views.
 import logging
 from decimal import Decimal
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response
 
 from ...models import AccountType
 from ...services import AccountService, TransactionService
@@ -220,6 +220,46 @@ def view_account(account_id):
         logger.error(f"Error viewing account {account_id}: {e}")
         flash_error("Unable to load account details.")
         return redirect(url_for('accounts.list_accounts'))
+
+
+@accounts_bp.route('/<int:account_id>/export')
+def export_transactions(account_id):
+    """
+    Export transactions for a specific account to CSV.
+
+    Args:
+        account_id: Account ID
+
+    Returns:
+        CSV file download
+    """
+    try:
+        account_service = AccountService()
+        transaction_service = TransactionService()
+
+        # Get account
+        account = account_service.get_account(account_id)
+        if not account:
+            flash_error("Account not found.")
+            return redirect(url_for('accounts.list_accounts'))
+
+        # Get all transactions for this account
+        transactions = transaction_service.get_transactions(account_id=account_id)
+
+        # Export to CSV
+        csv_content = transaction_service.export_to_csv(transactions)
+
+        # Create response
+        response = make_response(csv_content)
+        response.headers['Content-Type'] = 'text/csv'
+        response.headers['Content-Disposition'] = f'attachment; filename={account.name}_transactions.csv'
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error exporting transactions for account {account_id}: {e}")
+        flash_error("Failed to export transactions. Please try again.")
+        return redirect(url_for('accounts.view_account', account_id=account_id))
 
 
 @accounts_bp.route('/<int:account_id>/edit', methods=['GET', 'POST'])
