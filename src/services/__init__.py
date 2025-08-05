@@ -11,5 +11,5 @@ __all__ = [
     'StockdexProvider',
     'AccountService',
     'TransactionService',
-    'StockService',
+    'StockService'
 ]

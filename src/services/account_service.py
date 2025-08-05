@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta, UTC
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from ..models import db, Account, AccountType, Transaction, TransactionType
+from ..models import db, Account, AccountType, Transaction
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +145,7 @@ class AccountService:
             # Update allowed fields
             allowed_fields = {
                 'name', 'description', 'institution', 'account_number',
-                'is_active', 'currency'
+                'is_active', 'currency', 'balance'
             }
             
             for key, value in kwargs.items():
