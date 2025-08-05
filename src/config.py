@@ -26,6 +26,10 @@ class Config:
     # Application settings
     APP_NAME: str = "Financial Tracker"
     APP_VERSION: str = "0.1.0"
+
+    # Address and port
+    FLASK_HOST: str = '127.0.0.1'
+    FLASK_PORT: int = 5000
     
     # Financial API settings
     YFINANCE_TIMEOUT: int = int(os.environ.get('YFINANCE_TIMEOUT', '10'))
@@ -56,6 +60,10 @@ class DevelopmentConfig(Config):
     if os.environ.get('USE_MEMORY_DB'):
         SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
+    # Address and port
+    FLASK_HOST: str = '127.0.0.1'
+    FLASK_PORT: int = 5000
+
 
 class TestingConfig(Config):
     """Testing configuration with in-memory database."""
@@ -66,6 +74,10 @@ class TestingConfig(Config):
     
     # Use in-memory database for testing
     SQLALCHEMY_DATABASE_URI: str = 'sqlite:///:memory:'
+
+    # Address and port
+    FLASK_HOST: str = '127.0.0.1'
+    FLASK_PORT: int = 5005
 
 
 class ProductionConfig(Config):
