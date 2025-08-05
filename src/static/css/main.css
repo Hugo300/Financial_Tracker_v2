@@ -138,13 +138,23 @@ body {
     overflow: hidden;
 }
 
+.card-group {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
 .card-header {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
     display: flex;
-    justify-content: between;
+    justify-content: flex-start;
     align-items: center;
     background-color: var(--card-header-bg);
+    gap: 20px
 }
 
 .card-header h3 {
@@ -405,8 +415,60 @@ body {
     opacity: 0.5;
 }
 
+/* Text alignment utilities */
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+
+@keyframes highlight {
+    0% { background-color: var(--warning-bg); }
+    100% { background-color: transparent; }
+}
+
+
+/* Improved action buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+}
+
+.action-buttons .btn {
+    min-width: 2rem;
+    padding: 0.25rem 0.5rem;
+}
+
+
+/* Improved transaction type badges */
+.transaction-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Stock symbol styling */
+.stock-symbol {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.stock-symbol:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
 /* Responsive design */
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
     .nav-container {
         flex-direction: column;
         height: auto;
@@ -439,5 +501,51 @@ body {
     
     .search-input {
         width: 200px;
+    }
+
+    /* Responsive table adjustments */
+    .table-responsive {
+        margin: -0.5rem;
+        padding: 0.5rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .table th[data-sort="date"],
+    .table td.date-cell {
+        width: 80px;
+        min-width: 80px;
+    }
+
+    .table th[data-sort="number"],
+    .table td.number-cell,
+    .table td.amount-cell,
+    .table td.balance-cell {
+        width: 100px;
+        min-width: 100px;
+    }
+
+    .table td.description-cell {
+        max-width: 150px;
+        min-width: 100px;
+    }
+
+    .table td.account-cell {
+        width: 100px;
+        min-width: 80px;
+    }
+
+    .table td.category-cell {
+        width: 80px;
+        min-width: 60px;
+    }
+
+    .table td.actions-cell {
+        width: 60px;
+        min-width: 50px;
     }
 }
