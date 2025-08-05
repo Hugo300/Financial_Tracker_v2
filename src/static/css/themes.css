@@ -1,3 +1,10 @@
+
+:root {
+    --bg-color: #f8fafc;
+    --bg-secondary_color: #f1f5f9;
+    --primary-hover: #2563eb;
+}
+
 /* Light theme (default) */
 .theme-light {
     --primary-color: #3b82f6;
@@ -21,6 +28,7 @@
     --info-border: #a5f3fc;
     
     --bg-color: #f8fafc;
+    --bg-secondary-color: #f1f5f9;
     --text-color: #1e293b;
     --text-muted: #64748b;
     
@@ -60,6 +68,7 @@
     --info-border: #0e7490;
     
     --bg-color: #0f172a;
+    --bg-secondary-color: #1e293b;
     --text-color: #f1f5f9;
     --text-muted: #94a3b8;
     
