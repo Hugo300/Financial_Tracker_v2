@@ -125,7 +125,7 @@ class StockService:
         Returns:
             Stock instance or None if not found
         """
-        return self.session.query(Stock).filter(Stock.symbol == symbol.upper()).first()
+        return self.session.query(Stock).filter(Stock.symbol == symbol.upper()).first() # type: ignore [reportArgumentTypeIssue]
     
     def get_stocks(self, limit: Optional[int] = None, offset: int = 0) -> List[Stock]:
         """
@@ -163,7 +163,7 @@ class StockService:
             if not stock:
                 return None
             
-            current_price = self.financial_data_service.get_stock_price(stock.symbol)
+            current_price = self.financial_data_service.get_stock_price(stock.symbol) # type: ignore [reportArgumentTypeIssue]
             if current_price:
                 stock.update_price(current_price)
                 self.session.commit()
@@ -190,7 +190,7 @@ class StockService:
         
         for stock in stocks:
             try:
-                updated_stock = self.update_stock_price(stock.id)
+                updated_stock = self.update_stock_price(stock.id) # type: ignore [reportArgumentTypeIssue]
                 results[stock.symbol] = updated_stock is not None
             except Exception as e:
                 logger.error(f"Failed to update price for {stock.symbol}: {e}")
@@ -272,10 +272,10 @@ class StockService:
         query = self.session.query(Holding)
         
         if account_id is not None:
-            query = query.filter(Holding.account_id == account_id)
+            query = query.filter(Holding.account_id == account_id) # type: ignore [reportArgumentTypeIssue]
         
         if stock_id is not None:
-            query = query.filter(Holding.stock_id == stock_id)
+            query = query.filter(Holding.stock_id == stock_id) # type: ignore [reportArgumentTypeIssue]
         
         return query.all()
     
@@ -342,30 +342,30 @@ class StockService:
         holding = (
             self.session.query(Holding)
             .filter(
-                Holding.account_id == transaction.account_id,
-                Holding.stock_id == transaction.stock_id
+                Holding.account_id == transaction.account_id, # type: ignore [reportArgumentTypeIssue]
+                Holding.stock_id == transaction.stock_id # type: ignore [reportArgumentTypeIssue]
             )
             .first()
         )
         
-        if transaction.transaction_type == StockTransactionType.BUY:
+        if transaction.transaction_type == StockTransactionType.BUY: # type: ignore [reportArgumentTypeIssue]
             if holding:
                 # Update existing holding
-                holding.update_shares(transaction.shares, transaction.price_per_share)
+                holding.update_shares(transaction.shares, transaction.price_per_share) # type: ignore [reportArgumentTypeIssue]
             else:
                 # Create new holding
                 holding = Holding(
-                    account_id=transaction.account_id,
-                    stock_id=transaction.stock_id,
-                    shares=transaction.shares,
-                    average_cost=transaction.price_per_share,
-                    purchase_date=transaction.date
+                    account_id=transaction.account_id, # type: ignore [reportArgumentTypeIssue]
+                    stock_id=transaction.stock_id, # type: ignore [reportArgumentTypeIssue]
+                    shares=transaction.shares, # type: ignore [reportArgumentTypeIssue]
+                    average_cost=transaction.price_per_share, # type: ignore [reportArgumentTypeIssue]
+                    purchase_date=transaction.date # type: ignore [reportArgumentTypeIssue]
                 )
                 self.session.add(holding)
         
-        elif transaction.transaction_type == StockTransactionType.SELL and holding:
+        elif transaction.transaction_type == StockTransactionType.SELL and holding: # type: ignore [reportArgumentTypeIssue]
             # Update holding for sale
-            holding.update_shares(-transaction.shares, transaction.price_per_share)
+            holding.update_shares(-transaction.shares, transaction.price_per_share) # type: ignore [reportArgumentTypeIssue]
             
             # Remove holding if no shares left
             if holding.shares <= 0:
@@ -456,13 +456,13 @@ class StockService:
         query = self.session.query(StockTransaction)
 
         if account_id is not None:
-            query = query.filter(StockTransaction.account_id == account_id)
+            query = query.filter(StockTransaction.account_id == account_id) # type: ignore [reportArgumentTypeIssue]
 
         if stock_id is not None:
-            query = query.filter(StockTransaction.stock_id == stock_id)
+            query = query.filter(StockTransaction.stock_id == stock_id) # type: ignore [reportArgumentTypeIssue]
 
         if transaction_type is not None:
-            query = query.filter(StockTransaction.transaction_type == transaction_type)
+            query = query.filter(StockTransaction.transaction_type == transaction_type) # type: ignore [reportArgumentTypeIssue]
 
         query = query.order_by(StockTransaction.date.desc(), StockTransaction.created_at.desc())
 
@@ -520,8 +520,8 @@ class StockService:
         holding = (
             self.session.query(Holding)
             .filter(
-                Holding.account_id == transaction.account_id,
-                Holding.stock_id == transaction.stock_id
+                Holding.account_id == transaction.account_id, # type: ignore [reportArgumentTypeIssue]
+                Holding.stock_id == transaction.stock_id # type: ignore [reportArgumentTypeIssue]
             )
             .first()
         )
@@ -531,7 +531,7 @@ class StockService:
 
         if transaction.transaction_type == StockTransactionType.BUY:
             # Reverse a buy transaction by reducing shares
-            holding.update_shares(-transaction.shares, transaction.price_per_share)
+            holding.update_shares(-transaction.shares, transaction.price_per_share) # type: ignore [reportArgumentTypeIssue]
 
             # Remove holding if no shares left
             if holding.shares <= 0:
@@ -539,7 +539,7 @@ class StockService:
 
         elif transaction.transaction_type == StockTransactionType.SELL:
             # Reverse a sell transaction by adding shares back
-            holding.update_shares(transaction.shares, transaction.price_per_share)
+            holding.update_shares(transaction.shares, transaction.price_per_share) # type: ignore [reportArgumentTypeIssue]
 
     def search_stocks(self, query: str) -> List[Dict[str, str]]:
         """

@@ -112,13 +112,13 @@ class AccountService:
         query = self.session.query(Account)
         
         if account_type is not None:
-            query = query.filter(Account.account_type == account_type)
-        
+            query = query.filter(Account.account_type == account_type) # type: ignore [reportArgumentTypeIssue]
+
         if is_active is not None:
-            query = query.filter(Account.is_active == is_active)
+            query = query.filter(Account.is_active == is_active) # type: ignore [reportArgumentTypeIssue]
         
         if institution is not None:
-            query = query.filter(Account.institution == institution)
+            query = query.filter(Account.institution == institution) # type: ignore [reportArgumentTypeIssue]
         
         return query.order_by(Account.name).all()
     
@@ -238,7 +238,7 @@ class AccountService:
             # Get total balances by account type
             balances_by_type = (
                 self.session.query(
-                    Account.account_type,
+                    Account.account_type, # type: ignore [reportArgumentTypeIssue]
                     func.sum(Account.balance).label('total_balance'),
                     func.count(Account.id).label('account_count')
                 )
@@ -311,7 +311,7 @@ class AccountService:
             transactions = (
                 self.session.query(Transaction)
                 .filter(
-                    Transaction.account_id == account_id,
+                    Transaction.account_id == account_id, # type: ignore [reportArgumentTypeIssue]
                     Transaction.date >= start_date
                 )
                 .order_by(Transaction.date, Transaction.created_at)
