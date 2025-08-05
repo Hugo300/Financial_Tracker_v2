@@ -285,9 +285,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Make tables sortable
-    document.querySelectorAll('table[data-sortable]').forEach(table => {
-        TableUtils.makeSortable(table);
-    });
+    //document.querySelectorAll('table[data-sortable]').forEach(table => {
+    //    TableUtils.makeSortable(table);
+    //});
     
     // Auto-hide alerts after 5 seconds
     document.querySelectorAll('.alert').forEach(alert => {
