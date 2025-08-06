@@ -38,7 +38,7 @@
                 {{ summary.total_income|currency(settings.currency) }}
             </div>
             <div class="summary-detail">
-                {{ summary.income_count }} transactions
+                {{ summary.transaction_counts.income }} transactions
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@
                 {{ summary.total_expenses|currency(settings.currency) }}
             </div>
             <div class="summary-detail">
-                {{ summary.expense_count }} transactions
+                {{ summary.transaction_counts.expense }} transactions
             </div>
         </div>
     </div>
@@ -72,14 +72,14 @@
                 {% endif %}
             </div>
             <div class="summary-detail">
-                {{ summary.total_count }} total transactions
+                {{ summary.total_transactions }} total transactions
             </div>
         </div>
     </div>
 </div>
 
 <!-- Filters -->
-<div class="card">
+<div class="card-group">
     <div class="card-header">
         <h3>
             <i class="fas fa-filter"></i>
@@ -165,7 +165,7 @@
 </div>
 
 <!-- Transactions Table -->
-<div class="card">
+<div class="card-group">
     <div class="card-header">
         <h3>Transactions</h3>
         <div class="card-actions">

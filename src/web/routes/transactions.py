@@ -106,7 +106,7 @@ def list_transactions():
             end_date=end_date,
             account_id=account_id
         )
-        
+
         return render_template(
             'transactions/list.html',
             transactions=transactions,

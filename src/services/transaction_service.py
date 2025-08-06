@@ -335,7 +335,7 @@ class TransactionService:
             return {
                 'total_income': income_total,
                 'total_expenses': abs(expense_total),
-                'net_income': income_total + expense_total,  # expense_total is negative
+                'net_amount': income_total + expense_total,  # expense_total is negative
                 'transaction_counts': {t_type.value: count for t_type, count in type_counts},
                 'category_spending': {category.value: abs(amount) for category, amount in category_spending},
                 'total_transactions': query.count()
