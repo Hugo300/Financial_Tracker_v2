@@ -109,8 +109,8 @@
             <i class="fas fa-balance-scale"></i>
         </div>
         <div class="card-body">
-            <div class="summary-value {% if transaction_summary.net_income >= 0 %}positive{% else %}negative{% endif %}">
-                {{ transaction_summary.net_income|currency(settings.currency) }}
+            <div class="summary-value {% if transaction_summary.net_amount >= 0 %}positive{% else %}negative{% endif %}">
+                {{ transaction_summary.net_amount|currency(settings.currency) }}
             </div>
             <div class="summary-detail">
                 This month

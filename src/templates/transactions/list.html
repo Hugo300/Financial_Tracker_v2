@@ -3,189 +3,202 @@
 {% block title %}Transactions - Financial Tracker{% endblock %}
 
 {% block header %}
-<div class="page-header">
-    <h1>
-        <i class="fas fa-exchange-alt"></i>
-        Transactions
-    </h1>
-    <div class="header-actions">
-        <a href="{{ url_for('transactions.create_transaction') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i>
-            Add Transaction
-        </a>
-        <a href="{{ url_for('transactions.import_csv') }}" class="btn btn-outline">
-            <i class="fas fa-upload"></i>
-            Import CSV
-        </a>
-        <a href="{{ url_for('transactions.export_csv') }}" class="btn btn-outline">
-            <i class="fas fa-download"></i>
-            Export CSV
-        </a>
+<div class="container-lg">
+    <div class="row my-3 align-items-center justify-content-between">
+        <div class="col text-primary">
+            <h1>
+                <i class="fas fa-exchange-alt"></i>
+                Transactions
+            </h1>
+        </div>
+        <div class="col">
+            <div class="header-actions justify-content-end">
+                <a href="{{ url_for('transactions.create_transaction') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add Transaction
+                </a>
+                <a href="{{ url_for('transactions.import_csv') }}" class="btn btn-dark">
+                    <i class="fas fa-upload"></i>
+                    Import CSV
+                </a>
+                <a href="{{ url_for('transactions.export_csv') }}" class="btn btn-dark">
+                    <i class="fas fa-download"></i>
+                    Export CSV
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block content %}
 <!-- Transaction Summary -->
-<div class="summary-cards">
-    <div class="card summary-card">
-        <div class="card-header">
-            <h3>Total Income</h3>
-            <i class="fas fa-arrow-up"></i>
-        </div>
-        <div class="card-body">
-            <div class="summary-value positive">
-                {{ summary.total_income|currency(settings.currency) }}
-            </div>
-            <div class="summary-detail">
-                {{ summary.transaction_counts.income }} transactions
-            </div>
-        </div>
-    </div>
-
-    <div class="card summary-card">
-        <div class="card-header">
-            <h3>Total Expenses</h3>
-            <i class="fas fa-arrow-down"></i>
-        </div>
-        <div class="card-body">
-            <div class="summary-value negative">
-                {{ summary.total_expenses|currency(settings.currency) }}
-            </div>
-            <div class="summary-detail">
-                {{ summary.transaction_counts.expense }} transactions
+<div class="container-lg">
+    <div class="row my-3 align-items-center justify-content-between">
+        <div class="col ps-1">
+            <div class="card border-1 border-solid border-secondary">
+                <div class="card-header text-bg-secondary justify-content-between">
+                    <h3>Total Income</h3>
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="card-body">
+                    <div class="summary-value positive">
+                        {{ summary.total_income|currency(settings.currency) }}
+                    </div>
+                    <div class="font-size-sm text-secondary">
+                        {{ summary.transaction_counts.income }} transactions
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-
-    <div class="card summary-card">
-        <div class="card-header">
-            <h3>Net Amount</h3>
-            <i class="fas fa-balance-scale"></i>
-        </div>
-        <div class="card-body">
-            <div class="summary-value {% if summary.net_amount >= 0 %}positive{% else %}negative{% endif %}">
-                {% if summary.net_amount >= 0 %}
-                    +{{ summary.net_amount|currency(settings.currency) }}
-                {% else %}
-                    {{ summary.net_amount|currency(settings.currency) }}
-                {% endif %}
+        <div class="col px-2">
+            <div class="card border-1 border-solid border-secondary">
+                <div class="card-header text-bg-secondary justify-content-between">
+                    <h3>Total Expenses</h3>
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="card-body">
+                    <div class="summary-value negative">
+                        {{ summary.total_expenses|currency(settings.currency) }}
+                    </div>
+                    <div class="font-size-sm text-secondary">
+                        {{ summary.transaction_counts.expense }} transactions
+                    </div>
+                </div>
             </div>
-            <div class="summary-detail">
-                {{ summary.total_transactions }} total transactions
+        </div>
+        <div class="col pe-1">
+            <div class="card border-1 border-solid border-secondary">
+                <div class="card-header text-bg-secondary justify-content-between">
+                    <h3>Total Income</h3>
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div class="card-body">
+                    <div class="summary-value {% if summary.net_amount >= 0 %}positive{% else %}negative{% endif %}">
+                        {% if summary.net_amount >= 0 %}
+                            +{{ summary.net_amount|currency(settings.currency) }}
+                        {% else %}
+                            {{ summary.net_amount|currency(settings.currency) }}
+                        {% endif %}
+                    </div>
+                    <div class="font-size-sm text-secondary">
+                        {{ summary.total_transactions }} total transactions
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Filters -->
-<div class="card-group">
-    <div class="card-header">
-        <h3>
-            <i class="fas fa-filter"></i>
-            Filters
-        </h3>
-        <div class="card-actions">
-            <button type="button" id="clear-filters" class="btn btn-sm btn-outline">
-                <i class="fas fa-times"></i>
-                Clear Filters
-            </button>
-        </div>
-    </div>
-    <div class="card-body">
-        <form method="GET" id="filter-form" class="filter-form">
-            <div class="filter-grid">
-                <div class="filter-group">
-                    <label for="account_id" class="filter-label">Account</label>
-                    <select name="account_id" id="account_id" class="form-select">
-                        <option value="">All Accounts</option>
-                        {% for account in accounts %}
-                            <option value="{{ account.id }}" 
-                                {% if filters.account_id == account.id %}selected{% endif %}>
-                                {{ account.name }}
-                                {% if account.institution %}({{ account.institution }}){% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="type" class="filter-label">Type</label>
-                    <select name="type" id="type" class="form-select">
-                        <option value="">All Types</option>
-                        {% for type in transaction_types %}
-                            <option value="{{ type.value }}" 
-                                {% if filters.type == type.value %}selected{% endif %}>
-                                {{ type.value.title() }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="category" class="filter-label">Category</label>
-                    <select name="category" id="category" class="form-select">
-                        <option value="">All Categories</option>
-                        {% for cat in categories %}
-                            <option value="{{ cat.value }}" 
-                                {% if filters.category == cat.value %}selected{% endif %}>
-                                {{ cat.value.replace('_', ' ').title() }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="start_date" class="filter-label">Start Date</label>
-                    <input type="date" name="start_date" id="start_date" class="form-input"
-                           value="{{ filters.start_date }}">
-                </div>
-
-                <div class="filter-group">
-                    <label for="end_date" class="filter-label">End Date</label>
-                    <input type="date" name="end_date" id="end_date" class="form-input"
-                           value="{{ filters.end_date }}">
-                </div>
-
-                <div class="filter-group">
-                    <label for="payee" class="filter-label">Payee/Description</label>
-                    <input type="text" name="payee" id="payee" class="form-input"
-                           value="{{ filters.payee }}" placeholder="Search payee or description...">
-                </div>
-            </div>
-
-            <div class="filter-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                    Apply Filters
+ <div class="container-lg px-0 my-3 align-items-center justify-content-between">
+    <div class="card border-1 border-solid border-secondary">
+        <div class="card-header text-bg-secondary justify-content-between">
+            <h3>
+                <i class="fas fa-filter"></i>
+                Filters
+            </h3>
+            <div class="card-actions">
+                <button type="button" id="clear-filters" class="btn btn-sm btn-outline">
+                    <i class="fas fa-times"></i>
+                    Clear Filters
                 </button>
             </div>
-        </form>
+        </div>
+        <div class="card-body">
+            <form method="GET" id="filter-form" class="filter-form">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="account_id" class="filter-label">Account</label>
+                        <select name="account_id" id="account_id" class="form-select">
+                            <option value="">All Accounts</option>
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}" 
+                                    {% if filters.account_id == account.id %}selected{% endif %}>
+                                    {{ account.name }}
+                                    {% if account.institution %}({{ account.institution }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="type" class="filter-label">Type</label>
+                        <select name="type" id="type" class="form-select">
+                            <option value="">All Types</option>
+                            {% for type in transaction_types %}
+                                <option value="{{ type.value }}" 
+                                    {% if filters.type == type.value %}selected{% endif %}>
+                                    {{ type.value.title() }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="category" class="filter-label">Category</label>
+                        <select name="category" id="category" class="form-select">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.value }}" 
+                                    {% if filters.category == cat.value %}selected{% endif %}>
+                                    {{ cat.value.replace('_', ' ').title() }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="start_date" class="filter-label">Start Date</label>
+                        <input type="date" name="start_date" id="start_date" class="form-input"
+                            value="{{ filters.start_date }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="end_date" class="filter-label">End Date</label>
+                        <input type="date" name="end_date" id="end_date" class="form-input"
+                            value="{{ filters.end_date }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="payee" class="filter-label">Payee/Description</label>
+                        <input type="text" name="payee" id="payee" class="form-input"
+                            value="{% if filters.payee %} {{ filters.payee }} {% endif %}" placeholder="Search payee or description...">
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                        Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <!-- Transactions Table -->
-<div class="card-group">
-    <div class="card-header">
-        <h3>Transactions</h3>
-        <div class="card-actions">
-            <div class="table-search">
-                <input type="text" placeholder="Search transactions..."
-                       class="form-input" data-table-search="transactions-table">
-                <i class="fas fa-search search-icon"></i>
-            </div>
-            <span class="text-muted">{{ total_transactions }} total transactions</span>
-            {% if total_pages > 1 %}
-                <div class="pagination-info">
-                    Page {{ page }} of {{ total_pages }}
+<div class="container-lg px-0 my-3 align-items-center justify-content-between">
+    <div class="card border-1 border-solid border-secondary">
+        <div class="card-header text-bg-secondary justify-content-between">
+            <h3>Transactions</h3>
+            <div class="card-actions">
+                <div class="table-search">
+                    <input type="text" placeholder="Search transactions..."
+                        class="form-input" data-table-search="transactions-table">
+                    <i class="fas fa-search search-icon"></i>
                 </div>
-            {% endif %}
+                {% if total_pages > 1 %}
+                    <div class="pagination-info">
+                        Page {{ page }} of {{ total_pages }}
+                    </div>
+                {% endif %}
+            </div>
         </div>
-    </div>
-    <div class="card-body">
-        {% if transactions %}
-            <div class="table-responsive">
-                <table class="table" data-sortable id="transactions-table">
+        <div class="card-body">
+            {% if transactions %}
+                <table class="table table-hover table-striped">
                     <thead>
                         <tr>
                             <th data-sort="date">Date</th>
@@ -241,11 +254,11 @@
                                 <td class="actions-cell">
                                     <div class="action-buttons">
                                         <a href="{{ url_for('transactions.view_transaction', transaction_id=transaction.id) }}"
-                                           class="btn btn-sm btn-outline" title="View Details">
+                                            class="btn btn-sm btn-outline" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <a href="{{ url_for('transactions.edit_transaction', transaction_id=transaction.id) }}"
-                                           class="btn btn-sm btn-outline" title="Edit">
+                                            class="btn btn-sm btn-outline" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                     </div>
@@ -254,53 +267,53 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
 
-            <!-- Pagination -->
-            {% if total_pages > 1 %}
-                <div class="pagination">
-                    {% if page > 1 %}
-                        <a href="{{ url_for('transactions.list_transactions', page=page-1, **filters) }}" class="btn btn-sm btn-outline">
-                            <i class="fas fa-chevron-left"></i>
-                            Previous
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                    <div class="pagination">
+                        {% if page > 1 %}
+                            <a href="{{ url_for('transactions.list_transactions', page=page-1, **filters) }}" class="btn btn-sm btn-outline">
+                                <i class="fas fa-chevron-left"></i>
+                                Previous
+                            </a>
+                        {% endif %}
+                        
+                        <span class="pagination-info">
+                            Page {{ page }} of {{ total_pages }}
+                        </span>
+                        
+                        {% if page < total_pages %}
+                            <a href="{{ url_for('transactions.list_transactions', page=page+1, **filters) }}" class="btn btn-sm btn-outline">
+                                Next
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h3>No transactions found</h3>
+                    <p>{% if filters.account_id or filters.type or filters.category or filters.start_date or filters.end_date or filters.payee %}
+                        No transactions match your current filters. Try adjusting your search criteria.
+                    {% else %}
+                        You haven't recorded any transactions yet. Start by adding your first transaction.
+                    {% endif %}</p>
+                    <div class="empty-state-actions">
+                        <a href="{{ url_for('transactions.create_transaction') }}" class="btn btn-primary">
+                            <i class="fas fa-plus my-0 align-middle"></i>
+                            Add First Transaction
                         </a>
-                    {% endif %}
-                    
-                    <span class="pagination-info">
-                        Page {{ page }} of {{ total_pages }}
-                    </span>
-                    
-                    {% if page < total_pages %}
-                        <a href="{{ url_for('transactions.list_transactions', page=page+1, **filters) }}" class="btn btn-sm btn-outline">
-                            Next
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    {% endif %}
+                        {% if filters.account_id or filters.type or filters.category or filters.start_date or filters.end_date or filters.payee %}
+                            <button type="button" id="clear-filters-empty" class="btn btn-outline">
+                                <i class="fas fa-times my-0 align-middle"></i>
+                                Clear Filters
+                            </button>
+                        {% endif %}
+                    </div>
                 </div>
             {% endif %}
-        {% else %}
-            <div class="empty-state">
-                <i class="fas fa-exchange-alt"></i>
-                <h3>No transactions found</h3>
-                <p>{% if filters.account_id or filters.type or filters.category or filters.start_date or filters.end_date or filters.payee %}
-                    No transactions match your current filters. Try adjusting your search criteria.
-                {% else %}
-                    You haven't recorded any transactions yet. Start by adding your first transaction.
-                {% endif %}</p>
-                <div class="empty-state-actions">
-                    <a href="{{ url_for('transactions.create_transaction') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i>
-                        Add First Transaction
-                    </a>
-                    {% if filters.account_id or filters.type or filters.category or filters.start_date or filters.end_date or filters.payee %}
-                        <button type="button" id="clear-filters-empty" class="btn btn-outline">
-                            <i class="fas fa-times"></i>
-                            Clear Filters
-                        </button>
-                    {% endif %}
-                </div>
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -592,7 +605,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     if (activeFilters.length > 0) {
-        const filterHeader = document.querySelector('.card-header h3');
+        const nodeList = document.querySelectorAll('.card-header h3');
+        const filterHeader = Array.from(nodeList)
+            .filter(item => item.lastChild.textContent == 'Transactions')[0];
+
         if (filterHeader) {
             const badge = document.createElement('span');
             badge.className = 'filter-count-badge';
